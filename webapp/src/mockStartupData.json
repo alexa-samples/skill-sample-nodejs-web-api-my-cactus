@@ -1,0 +1,33 @@
+{
+  "cactus": {
+    "blindState": "open",
+    "dayOfBirth": 1591991073722,
+    "daysAlive": 13,
+    "healthLevel": 80,
+    "lastUpdated": 1593540469788,
+    "latestInteraction": 1591991073722,
+    "name": "Prickly Padme",
+    "waterLevel": 50
+  },
+  "latestInteraction": 1593540554954,
+  "lifeTime": {
+    "waterUnits": 35
+  },
+  "timeZone": "America/Los_Angeles",
+  "timesChecked": 1,
+  "unlockedBadges": {
+    "durations": {
+      "1": true,
+      "14": true,
+      "180": false,
+      "3": true,
+      "30": false,
+      "365": false,
+      "7": true,
+      "90": false
+    },
+    "earlyBird": false,
+    "nightOwl": false,
+    "waterUnits": []
+  }
+}
