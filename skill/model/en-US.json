@@ -1,0 +1,110 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "my cactus",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "CaptureDestination",
+                    "slots": [
+                        {
+                            "name": "destination",
+                            "type": "AMAZON.City"
+                        }
+                    ],
+                    "samples": [
+                        "I like {destination}",
+                        "{destination}",
+                        "I would like to go to {destination}"
+                    ]
+                },
+                {
+                    "name": "WaterCactusIntent",
+                    "slots": [],
+                    "samples": [
+                        "give it some water",
+                        "serve my cactus some water",
+                        "quench my cacti",
+                        "pour water on my cactus",
+                        "let it rain",
+                        "water it",
+                        "Water my cactus"
+                    ]
+                },
+                {
+                    "name": "OpenBlindsIntent",
+                    "slots": [],
+                    "samples": [
+                        "catch some rays",
+                        "raise the blinds",
+                        "begone count dracula",
+                        "brighten my day",
+                        "shine some rays on my cactus",
+                        "let there be light",
+                        "open the blinds"
+                    ]
+                },
+                {
+                    "name": "CloseBlindsIntent",
+                    "slots": [],
+                    "samples": [
+                        "turn off the sun",
+                        "decend into the darkness",
+                        "block out the sun",
+                        "lower the blast doors",
+                        "lower the blinds",
+                        "begone sun",
+                        "make it dark",
+                        "close them",
+                        "close the blinds"
+                    ]
+                },
+                {
+                    "name": "GetStatusIntent",
+                    "slots": [],
+                    "samples": [
+                        "Whatchamacallit",
+                        "what's up",
+                        "how's my cactus"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "samples": []
+                },
+                {
+                    "name": "CheckBadgesIntent",
+                    "slots": [],
+                    "samples": [
+                        "what have I unlocked",
+                        "what are my trophies",
+                        "what are my achievements",
+                        "we don't need no stinking badges",
+                        "badges",
+                        "what are my badges"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}
