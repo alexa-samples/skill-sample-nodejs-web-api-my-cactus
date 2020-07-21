@@ -37,7 +37,6 @@ var NUMBER_GLBS = 6;//Update if adding another GLB to the game.
 
 //Loader information
 const sourceArtDir = "./assets/source-art/";
-const animationsDir = sourceArtDir + "animations/v2/";
 
 const SPIDER_TIMER = 5000;
 init();
@@ -240,7 +239,7 @@ function init() {
 
     //Add the scene
     const gltfLoader = new GLTFLoader.GLTFLoader();
-    gltfLoader.load(animationsDir + 'Cactus_scene.glb', function (gltf) { 
+    gltfLoader.load(sourceArtDir + 'Cactus_scene.glb', function (gltf) { 
         scene.add(gltf.scene);
         countGlbs++;
         console.log(gltf);
@@ -296,7 +295,7 @@ function setUpGameState(dataPayload) {
 
 function loadOtherScenes(gltfLoader) {
     //Load the cactus and dance anim
-    gltfLoader.load(animationsDir + 'Cactus_plant_dance.glb', function (gltf) {
+    gltfLoader.load(sourceArtDir + 'Cactus_plant_dance.glb', function (gltf) {
         scene.add(gltf.scene);
         cactus.load(gltf);
         countGlbs++;
@@ -306,7 +305,7 @@ function loadOtherScenes(gltfLoader) {
     });
 
     //Load the blinds and anim
-    gltfLoader.load(animationsDir + 'Cactus_blinds_upDown-separated.glb', function (gltf) {
+    gltfLoader.load(sourceArtDir + 'Cactus_blinds_upDown-separated.glb', function (gltf) {
         scene.add(gltf.scene);
         blinds.load(gltf);
         countGlbs++;
@@ -317,7 +316,7 @@ function loadOtherScenes(gltfLoader) {
     });
 
     //Load the watering can
-    gltfLoader.load(animationsDir + 'Cactus_watering-can.glb', function (gltf) {
+    gltfLoader.load(sourceArtDir + 'Cactus_watering-can.glb', function (gltf) {
         scene.add(gltf.scene);
         pail.load(gltf);        
         countGlbs++;
@@ -327,7 +326,7 @@ function loadOtherScenes(gltfLoader) {
     });
 
     //Load the spider squished
-    gltfLoader.load(animationsDir + 'Cactus_flat_spider.glb', function (gltf) {
+    gltfLoader.load(sourceArtDir + 'Cactus_flat_spider.glb', function (gltf) {
         scene.add(gltf.scene);
         spider.loadSquished(gltf);
         countGlbs++;
@@ -337,7 +336,7 @@ function loadOtherScenes(gltfLoader) {
     });
 
     //Load the spider and anim
-    gltfLoader.load(animationsDir + 'Cactus_spider_walk.glb', function (gltf) {
+    gltfLoader.load(sourceArtDir + 'Cactus_spider_walk.glb', function (gltf) {
         scene.add(gltf.scene);
         spider.loadWalk(gltf);
         countGlbs++;

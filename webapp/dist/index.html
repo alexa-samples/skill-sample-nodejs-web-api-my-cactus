@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Getting Started</title>
+        <script src="https://cdn.beta.html.games.alexa.a2z.com/alexa-html/latest/alexa-html.js"></script>
+    </head>
+    <body>
+        <style>
+            .hud {
+                position: absolute;
+                text-align: center;
+                z-index: 100;
+                display:block;
+            }
+            #info {
+                width: 100%;
+                background-color: rgba(0,0,0,0.3); /* Black background with opacity */
+                top: 75%;
+            }
+            #debugInfo {
+                width: 100%;
+                background-color: rgba(0,0,0,0.3); /* Black background with opacity */
+                top: 85%
+            }
+            #waterBar {
+                right: 10%;
+                top: 60%
+            }
+            #healthBar {
+                right: 10%;
+                top: 65%
+            }
+            #container {
+                position: relative;
+            }
+            #name {
+                top: 55%;
+                right: 10%;
+            }
+        </style>
+        <div id="container">
+            <canvas id="webGLCanvas"></canvas>            
+            <div class="hud" id="name">My Cactus</div>
+            <progress class="hud" id="waterBar" max="100"></progress>
+            <progress class="hud" id="healthBar" max="100"></progress>
+            <div class="hud" id="info">General Info</div>
+            <div class="hud" id="debugInfo">Debug</div>
+        </div>
+        <script src="main.js"></script>
+    </body>
+</html>
