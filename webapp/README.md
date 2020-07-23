@@ -36,6 +36,6 @@ Note, the server is started in "no-cache" mode (-c-1 flag) for MUCH easier devel
 
 ## Bugs?
 
-Please open bug reports on Github using Github issues. Include the steps taken to reproduce. You can use this for suggested improvements as well. 
+Please open bug reports on Github using Github issues. Include the steps taken to reproduce. You can use this for suggested improvements as well. First, check out the list of [known issues](./KNOWN_ISSUES.md).
 
 Feel free to fork and open a pull request if you have a fix or improvement to make, also!
