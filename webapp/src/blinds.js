@@ -1,4 +1,4 @@
-var blindsUpAction, blindsDownAction, blindsMixer;
+var blindsUpAction, blindsDownAction, blindsMixerUp, blindsMixerDown;
 var debugLevel;
 const THREE = require('three');
 const BLINDS_UP_ANIM = "animateBlindsUP";
@@ -8,7 +8,8 @@ const BLINDS_OBJ_NAME = "blinds";
 
 module.exports = {
     update(delta) {
-        blindsMixer.update(delta);
+        blindsMixerUp.update(delta);
+        blindsMixerDown.update(delta);
     },
     init(startInfo, debugLevel) {
         this.debugLevel = debugLevel;
@@ -26,26 +27,26 @@ module.exports = {
         return selectedObjSet.has(BLINDS_OBJ_NAME);
     },
     load(gltf) {
-        //TODO fix animation setup
-        blindsMixer = new THREE.AnimationMixer(gltf.scene);
+        blindsMixerUp = new THREE.AnimationMixer(gltf.scene);
+        blindsMixerDown = new THREE.AnimationMixer(gltf.scene);
         let blindsUpClip = THREE.AnimationClip.findByName(gltf.animations, BLINDS_UP_ANIM);
         let blindsDownClip = THREE.AnimationClip.findByName(gltf.animations, BLINDS_DOWN_ANIM);
 
-        blindsUpAction = blindsMixer.clipAction(blindsUpClip);
-        // blindsUpAction.clampWhenFinished = true;
+        blindsUpAction = blindsMixerUp.clipAction(blindsUpClip);
+        blindsUpAction.clampWhenFinished = true;
         blindsUpAction.loop = THREE.LoopOnce;
 
-        blindsDownAction = blindsMixer.clipAction(blindsDownClip);
-        // blindsDownAction.clampWhenFinished = true;
+        blindsDownAction = blindsMixerDown.clipAction(blindsDownClip);
+        blindsDownAction.clampWhenFinished = true;
         blindsDownAction.loop = THREE.LoopOnce;
     },
     lower() {
-        blindsMixer.stopAllAction();
+        blindsMixerDown.stopAllAction();
         blindsDownAction.reset().play();
-        console.log(blindsMixer);
+        console.log(blindsMixerUp);
     },
     raise() {
-        blindsMixer.stopAllAction();
+        blindsMixerUp.stopAllAction();
         blindsUpAction.reset().play();
     },
     onClick(alexa) {

@@ -37,6 +37,7 @@ var NUMBER_GLBS = 6;//Update if adding another GLB to the game.
 
 //Loader information
 const sourceArtDir = "./assets/source-art/";
+const backgroundHealthyAsset = sourceArtDir + "Pete_Background-Healthy.png";
 
 const SPIDER_TIMER = 5000;
 init();
@@ -102,10 +103,6 @@ window.setTimeout(function() {
 }, SPIDER_TIMER);
 
 console.log("post init");
-
-// Adding the background texture.
-// const bgTexture = new THREE.TextureLoader().load('./assets/Pete_Background-Neutral.png');
-// scene.background = bgTexture;
 
 /**
  * Logs a message locally and if alexa is initialized, pushes the message to the lambda to log.
@@ -291,6 +288,11 @@ function setUpGameState(dataPayload) {
     //initialize state of objects
     blinds.init(startInfo.cactus, debugLevel);
     cactus.init(startInfo.cactus, debugLevel);
+
+    
+    // Adding the background texture. TODO make this change based on backend information
+    const bgTexture = new THREE.TextureLoader().load(backgroundHealthyAsset);
+    scene.background = bgTexture;
 }
 
 function loadOtherScenes(gltfLoader) {
