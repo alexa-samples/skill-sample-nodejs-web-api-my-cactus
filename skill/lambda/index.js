@@ -12,6 +12,7 @@ const moment = require('moment-timezone');
 // 1. Address what to when the user says NO
 // 2. SSML additions 
 // 3. DEATH_NOTES - Split based upon cause of death
+// 4. Update the status message so the default isn't always thirsty
 
 // Bug Bash
 
@@ -336,14 +337,31 @@ const YesIntentHandler = {
 };
 
 
-const NoIntentHandler = {
+// TODO: Ask Alison for new rejection response.
+const DeadCactusNoIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent';
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent'
+            && !getProfile(handlerInput).cactus.name;
     },
     handle(handlerInput) {
         return handlerInput.responseBuilder
-            .speak('Ask Alison what I should do here :)')
+            .speak('Aw too bad. The next time you open the skill, you can start over again.')
+            .getResponse();
+    }
+};
+
+// TODO: Ask Alison for a better response.
+const HasCactusNoIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent'
+            && getProfile(handlerInput).cactus.name;
+    },
+    handle(handlerInput) {
+        return handlerInput.responseBuilder
+            .speak("You already have a cactus that's alive and well. You water the water the cactus, or open and close the blinds. Which will it be?")
+            .reprompt("You already have a cactus that's alive and well. You water the water the cactus, or open and close the blinds. Which will it be?")
             .getResponse();
     }
 };
@@ -695,8 +713,6 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
     
     const lastUpdated = moment(cactus.lastUpdated);
     const dayOfBirth = moment(cactus.dayOfBirth);
-    
-    console.log('latestInteraction', latestInteraction, 'dob', dayOfBirth);
 
     const daysAlive = moment.duration(latestInteraction.diff(dayOfBirth));
     cactus.daysAlive = Math.floor(daysAlive.asDays());
@@ -713,7 +729,7 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
     if (hoursSinceLastUpdate >= 1) {
         // run the simulation
         // console.log('perform the update');
-        
+
         for(let i = 0; i < Math.floor(hoursSinceLastUpdate) && cactus.healthLevel > 0; i++) {
             // JBNunn effect - sun bias
             cactus.waterLevel -= 1;
@@ -726,10 +742,11 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
                 healthDecrementor += 7;
             }
 
+            // console.log('computeStatus', cactus.latestInteraction);
 
             // subtract 7 if cold or lacks sunlight
-            if ((isItDaylight(latestInteraction, timeZone) && cactus.blindState === 'closed') 
-                    || (!isItDaylight(latestInteraction, timeZone) && cactus.blindState === 'open') ) {
+            if ((isItDaylight(lastUpdated, timeZone) && cactus.blindState === 'closed') 
+                    || (!isItDaylight(lastUpdated, timeZone) && cactus.blindState === 'open') ) {
                 healthDecrementor += 7;
             } 
 
@@ -757,12 +774,14 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
 
             // console.log('healthLevel', cactus.healthLevel);
             cactus.lastUpdated = moment.now();
+
+            lastUpdated.add(1, 'hour');
         }
     }
 
-    console.log('cactus age',cactus.daysAlive);
     return cactus;
 };
+
 
 const unshiftUnlockHistory = function(profile, item) {
     profile.unlockedBadges.unlockHistory.unshift(item);
@@ -1043,7 +1062,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         CheckBadgesIntentHandler,
         HasCactusYesIntentHandler,
         YesIntentHandler,
-        NoIntentHandler,
+        DeadCactusNoIntentHandler,
+        HasCactusNoIntentHandler,
         HasCactusLaunchRequestHandler,
         LaunchRequestHandler,
         hasCactusCaptureDestinationHandler,
