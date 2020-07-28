@@ -41,23 +41,22 @@ module.exports = {
         blindsDownAction.loop = THREE.LoopOnce;
     },
     lower() {
-        blindsMixerDown.stopAllAction();
+        // blindsMixerDown.stopAllAction();
         blindsDownAction.reset().play();
-        console.log(blindsMixerUp);
+        blindsOpen = false;
     },
     raise() {
-        blindsMixerUp.stopAllAction();
+        // blindsMixerUp.stopAllAction();
         blindsUpAction.reset().play();
+        blindsOpen = true;
     },
     onClick(alexa) {
         console.log("Clicked Blinds");
         // blindsSound.play();
         if(blindsOpen) {
-            blindsOpen = false;
-            blindsDownAction.reset().play()
+            this.lower();
         } else {
-            blindsOpen = true;
-            blindsUpAction.reset().play()
+            this.raise();
         }
 
         if(alexa != null) {

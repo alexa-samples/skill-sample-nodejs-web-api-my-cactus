@@ -19,7 +19,7 @@ const moment = require('moment-timezone');
 
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 //TODO change this URL to your publicly accessible HTTPS endpoint.
-const webAppBaseURL = "https://dfa61e447841.ngrok.io";
+const webAppBaseURL = "https://74d93d56ba08.ngrok.io";
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
@@ -398,8 +398,9 @@ function getMessageIntent(requestEnvelope) {
 const CheckBadgesIntentHandler = {
     canHandle(handlerInput) {
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-            || Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST)
-            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CheckBadgesIntent';
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CheckBadgesIntent') || 
+            (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
+            && getMessageIntent(handlerInput.requestEnvelope) === 'CheckBadgesIntent');
     },
     handle(handlerInput) {
         const profile = getProfile(handlerInput);

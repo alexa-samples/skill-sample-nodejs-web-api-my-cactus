@@ -3,11 +3,12 @@
     "blindState": "open",
     "dayOfBirth": 1591991073722,
     "daysAlive": 13,
-    "healthLevel": 80,
+    "healthLevel": 50,
+    "waterMax": 20,
     "lastUpdated": 1593540469788,
     "latestInteraction": 1591991073722,
-    "name": "Prickly Padme",
-    "waterLevel": 50
+    "name": "Choosing Cactus...",
+    "waterLevel": 10
   },
   "latestInteraction": 1593540554954,
   "lifeTime": {

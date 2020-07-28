@@ -14,12 +14,16 @@ const spider = require('./spider');
 var debugLevel = 1;
 var fullControls = false;
 
+//audio listeners
+var listeners = []
+
 var infoElement = document.getElementById("info");
 var debugElement = document.getElementById("debugInfo");
 var canvas = document.getElementById("webGLCanvas");
 var waterStatusBar = document.getElementById("waterBar"); 
 var healthSatusBar = document.getElementById("healthBar"); 
 var nameElement = document.getElementById("name"); 
+infoElement.style.display = "none";
 
 if(debugLevel < 1) { // hide the debug element if no debugging.
     infoElement.style.display = "none";
@@ -40,7 +44,6 @@ const sourceArtDir = "./assets/source-art/";
 const backgroundHealthyAsset = sourceArtDir + "Pete_Background-Healthy.png";
 
 const SPIDER_TIMER = 5000;
-init();
 
 //Render loop
 var render = function () {
@@ -48,6 +51,25 @@ var render = function () {
     renderer.render(scene, camera);
     update();
 };
+
+//Actual code execution
+try {
+    init();
+
+    //Start the process.
+    render();
+    
+    //Create a Spider after some time.
+    window.setTimeout(function() {
+        spider.spawnSpider();
+    }, SPIDER_TIMER);
+    
+    console.log("post init");
+} catch(err) {
+    const errMessage = `error: ${err.name}, message: ${err.message}, stack: ${err.stack}`;
+    debugElement.textContent = JSON.stringify(errMessage);
+    cloudLog(errMessage);
+}
 
 //Update function
 function update() {
@@ -94,16 +116,6 @@ function update() {
     selector.deselect();
 }
 
-//Start the process.
-render();
-
-//Create a Spider after some time.
-window.setTimeout(function() {
-    spider.spawnSpider();
-}, SPIDER_TIMER);
-
-console.log("post init");
-
 /**
  * Logs a message locally and if alexa is initialized, pushes the message to the lambda to log.
  * @param {*} messageStr 
@@ -136,7 +148,7 @@ function setupAlexa() {
             debugElement.textContent = 'startup succeeded, time to start my game';
             infoElement.textContent = JSON.stringify(message);
         }
-        startInfo = message;
+        refreshGameState(message);
         //Start BG Music when we know it is an Alexa-enabled device.
         bgMusic.play();
     });
@@ -149,9 +161,11 @@ function setupAlexa() {
     });
     alexa.speech.onStarted(() => {
         console.log('speech is playing');
+        duckAudio();
     });
     alexa.speech.onStopped(() => {
         console.log('speech stopped playing');
+        restoreAudio();
     });
     // Called every time a data payload comes from backend as a message Directive.
     alexa.skill.onMessage((message) => {
@@ -159,26 +173,57 @@ function setupAlexa() {
             debugElement.textContent = JSON.stringify(message);
         }
 
+        refreshGameState(message.gameState);
+
         //If in intent exists and matches one of the below, play all local animations/sounds.
         if(message.intent) {
             switch(message.intent) {
                 case "water":
                     pail.water();
                     break;
-                case "blindsDown"://todo test this and blinds up
-                    blinds.lower();
-                    break;
-                case "blindsUp":
-                    blinds.raise();
-                    break;
+                // case "blindsDown"://todo test this and blinds up
+                //     blinds.lower();
+                //     break;
+                // case "blindsUp":
+                //     blinds.raise();
+                //     break;
                 default:
                     return;
             }
         }
     });
-    //TODO add audio ducking.
+    //TODO add screen dimming.
+    alexa.voice.onMicrophoneOpened(() => {
+        // dimScreen();
+        duckAudio();
+        cloudLog("microphone opened");
+    });
+    alexa.voice.onMicrophoneClosed(() => {
+        // undimScreen();
+        restoreAudio();
+        cloudLog("microphone closed");
+    });
 
+}
 
+function dimScreen() {
+
+}
+
+function undimScreen() {
+
+}
+
+function duckAudio() {
+    listeners.forEach(listener => {
+        listener.setMasterAudio(.4);
+    });
+}
+
+function restoreAudio() {
+    listeners.forEach(listener => {
+        listener.setMasterAudio(1);
+    });
 }
 
 // initializes the scene, camera, and renderer.
@@ -252,11 +297,13 @@ function init() {
 function loadAudio() {
     //web audio setup.
     var listener1 = new THREE.AudioListener();
+    listeners.push(listener1);
     spider.loadAudio(listener1);
     camera.add(listener1);
 
     var listener2 = new THREE.AudioListener();
     loadBackgroundMusic(listener2);
+    listeners.push(listener2);
     // camera.add(listener2);
 }
 
@@ -264,31 +311,32 @@ function loadBackgroundMusic(listener) {
     var audioLoader = new THREE.AudioLoader();
 
     bgMusic = new THREE.Audio(listener);
-    audioLoader.load( './assets/audio/video_tunes_01_loopable.mp3', function(buffer) {
+    audioLoader.load('./assets/audio/video_tunes_01_loopable.mp3', function(buffer) {
         bgMusic.setBuffer(buffer);
-        bgMusic.setVolume(0.03);
+        bgMusic.setVolume(0.06);
         bgMusic.setLoop(true);
     });
 }
 
 /**
  * 
- * @param {*} dataPayload from the web app startup. Comes from Alexa backend. Call only once assets are initialized
+ * @param {*} dataPayload from the Alexa backend at startup and on other responses. 
+ * Call only once assets are initialized and on every time there is a state update.
  */
-function setUpGameState(dataPayload) {
+function refreshGameState(dataPayload) {
     cactusState = dataPayload.cactus;
     if(debugLevel >= 1) {
         console.log(cactusState.waterLevel);
     }
     //initialize state of visible DOM elements not controlled by a class.
     nameElement.textContent = cactusState.name;
+    waterStatusBar.max = cactusState.waterMax;
     waterStatusBar.value = cactusState.waterLevel;
     healthSatusBar.value = cactusState.healthLevel;
 
     //initialize state of objects
-    blinds.init(startInfo.cactus, debugLevel);
-    cactus.init(startInfo.cactus, debugLevel);
-
+    blinds.init(cactusState, debugLevel);
+    cactus.init(cactusState, debugLevel);
     
     // Adding the background texture. TODO make this change based on backend information
     const bgTexture = new THREE.TextureLoader().load(backgroundHealthyAsset);
@@ -356,7 +404,7 @@ function setUpScene() {
     controls.update();
 
     //Set up initial Game values. Acts on the assets
-    setUpGameState(startInfo);
+    refreshGameState(startInfo);
 
 }
 
@@ -435,7 +483,7 @@ function onClickOrTouch(screenX, screenY) {
     const screenVector = normalize2DPoint(nonNormalPos);
     const worldVector = new THREE.Vector3(screenX, screenY, -1).unproject(camera);
     if(debugLevel >= 1) {
-        debugElement.textContent = "world  vector: " + JSON.stringify(worldVector) 
+        infoElement.textContent = "world  vector: " + JSON.stringify(worldVector) 
             + "\nclick  vector: " + JSON.stringify(nonNormalPos) 
             + "\nnormal vector: " + JSON.stringify(screenVector);
     }
