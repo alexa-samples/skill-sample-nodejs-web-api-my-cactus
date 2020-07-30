@@ -9,10 +9,10 @@ const moment = require('moment-timezone');
 
 
 // BIG TODOS:
+// 0. Refactor Code into other other seperate files (add the jasmine node and unit tests to the github project)
 // 1. Address what to when the user says NO
 // 2. SSML additions 
 // 3. DEATH_NOTES - Split based upon cause of death
-// 4. Update the status message so the default isn't always thirsty
 
 // Bug Bash
 
@@ -179,7 +179,10 @@ const HasCactusLaunchRequestHandler = {
         const attributesManager = handlerInput.attributesManager;
         let profile = attributesManager.getSessionAttributes();
         
-        let speakOutput = `${profile.cactus.name} is thirsty.`;
+        const status = getStatus(profile);
+        
+        let speakOutput = status.message;
+        
         conditionallyLaunchWebApp(handlerInput);
         
         if ( profile.cactus.healthLevel <= 0 ) {
@@ -393,8 +396,8 @@ function getMessageIntent(requestEnvelope) {
     return null; // Otherwise no intent found in the message body
 }
 
-// TODO: Create a "stack" of capacity 5 and push the latest badge and remove the oldest badge 
-// once the size reaches the capacity.
+// TODO: come up with a "database" of badge and their metadata
+// create an unlock table that tracks when a badge was unlocked for a user
 const CheckBadgesIntentHandler = {
     canHandle(handlerInput) {
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -404,12 +407,12 @@ const CheckBadgesIntentHandler = {
     },
     handle(handlerInput) {
         const profile = getProfile(handlerInput);
-        const unlockHistory = profile.unlockedBadges.unlockHistory;
+        const latest = profile.unlockedBadges.latest;
         
         let speakOutput = "You haven't unlocked any badges yet. Keep playing and I'm sure you'll unlock something. ";
         
-        if (unlockHistory.length > 0) { 
-            speakOutput = `Your last unlocked badge is ${unlockHistory[unlockHistory.length-1]} `;
+        if (latest !== '') { 
+            speakOutput = `Your last unlocked badge is ${latest} `;
         }
 
         speakOutput += "What would you like to do?";
@@ -434,57 +437,9 @@ const GetStatusIntentHandler = {
         
         console.log('GetStatusIntentHandler', JSON.stringify(profile));
         
-        const needs = getNeeds(profile);
+        const status = getStatus(profile);
         
-        let statusMessage;
-        if (!needs.water && !needs.comfort) {
-            statusMessage = `${profile.cactus.name} ${getRandomItemFromList(NO_NEEDS)} ${getRandomItemFromList(WISDOM_MESSAGES)}`;
-        
-            return handlerInput.responseBuilder
-                .speak(statusMessage)
-                .getResponse();
-            
-        } else if (needs.water || needs.comfort) {
-            
-            // TODO: move this to API gateway and make sure that the items are not global 
-            const ONE_NEED = [
-                `${profile.cactus.name} is feeling fine.`,
-                `${profile.cactus.name} is feeling just fine.`,
-                `All is OK with ${profile.cactus.name}.`,
-                `All is fine with ${profile.cactus.name}.`,
-                `${profile.cactus.name} is feeling just OK.`,
-                `${profile.cactus.name} is feeling indifferent.`,
-                `${profile.cactus.name} is doing alright.`,
-                `${profile.cactus.name} is doing alright, considering the circumstances.`,
-                `${profile.cactus.name} is feeling neutral right now.`,
-                `${profile.cactus.name} is feeling a bit blase.`, 
-            ];
-            
-            statusMessage = getRandomItemFromList(ONE_NEED);
-            
-        } else {
-            
-            statusMessage = `${profile.cactus.name} ${getRandomItemFromList(TWO_NEEDS)}`;
-        }
-        
-        let prompt = "";
-        if(needs.water) {
-            prompt = `You can water ${profile.cactus.name}.`;
-        }
-        
-        if (needs.water && needs.comfort) {
-            prompt += " or ";
-        }
-        
-        if (needs.comfort) {
-            prompt +=  ` you can ${profile.cactus.blindState === 'closed' ?  'open' : 'close'} the blinds.`;
-        }
-        
-        if (needs.water && needs.comfort) {
-            prompt += " Which do you want?";
-        }
-        
-        const speakOutput = `${statusMessage} ${prompt}`;
+        const speakOutput = status.message;
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -687,25 +642,76 @@ const isItDaylight = function(timeStamp, timeZone) {
 
 const getNeeds = function(profile) {
 
+    const isDaylight = isItDaylight(profile.cactus.latestInteraction, profile.timeZone);
+
     const needs = {
         water: false,
-        comfort: false
+        comfort: false,
     };
-    
 
     if (profile.cactus.waterLevel <= 0) {
         needs.water = true;
     }
 
-    const isDaylight =  isItDaylight(moment.now(), profile.timeZone);
-    
-
     if ((isDaylight && profile.cactus.blindState === 'closed')
-        || (!isDaylight && profile.cactus.blindState === 'open')) {
-        needs.comfort = true;
-    }
+            || (!isDaylight && profile.cactus.blindState === 'open')) {
+        needs.comfort = true
+    } 
+
     return needs;
 }
+
+const getStatus = function(profile) {
+    const needs = getNeeds(profile);
+
+    let statusMessage;
+    if (!needs.water && !needs.comfort) {
+        statusMessage = `${profile.cactus.name} ${getRandomItemFromList(NO_NEEDS)} ${getRandomItemFromList(WISDOM_MESSAGES)}`;        
+    } else if (needs.water || needs.comfort) {
+        
+        // TODO: move this to API gateway and make sure that the items are not global 
+        const ONE_NEED = [
+            `${profile.cactus.name} is feeling fine.`,
+            `${profile.cactus.name} is feeling just fine.`,
+            `All is OK with ${profile.cactus.name}.`,
+            `All is fine with ${profile.cactus.name}.`,
+            `${profile.cactus.name} is feeling just OK.`,
+            `${profile.cactus.name} is feeling indifferent.`,
+            `${profile.cactus.name} is doing alright.`,
+            `${profile.cactus.name} is doing alright, considering the circumstances.`,
+            `${profile.cactus.name} is feeling neutral right now.`,
+            `${profile.cactus.name} is feeling a bit blase.`, 
+        ];
+        
+        statusMessage = getRandomItemFromList(ONE_NEED);
+        
+    } else {
+        
+        statusMessage = `${profile.cactus.name} ${getRandomItemFromList(TWO_NEEDS)}`;
+    }
+    
+    let prompt = "";
+    if(needs.water) {
+        prompt = `You can water ${profile.cactus.name}.`;
+    }
+    
+    if (needs.water && needs.comfort) {
+        prompt += " or ";
+    }
+    
+    if (needs.comfort) {
+        prompt +=  ` you can ${profile.cactus.blindState === 'closed' ?  'open' : 'close'} the blinds.`;
+    }
+    
+    if (needs.water && needs.comfort) {
+        prompt += " Which do you want?";
+    }
+
+    //TODO: Ask Alison what to prompt after cactus wisdom for no needs.
+    needs.message = `${statusMessage} ${prompt}`;
+
+    return needs;
+};
 
 const computeStatus = function(profile, latestInteraction, timeZone) {
 
@@ -784,10 +790,6 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
 };
 
 
-const unshiftUnlockHistory = function(profile, item) {
-    profile.unlockedBadges.unlockHistory.unshift(item);
-}
-
 // TODO: use cactus.daysAlive instead of actualDuration because we already have computed it :)
 const evaluateBadges = function(profile, currentTime) {
 
@@ -799,20 +801,21 @@ const evaluateBadges = function(profile, currentTime) {
     if(waterUnits > 99 && waterUnits >= waterThreshold) {
         // update the badges
         unlockedBadges.waterUnits.push(waterUnits);
-        unshiftUnlockHistory(profile, `Lifetime water units for giving your cactus over ${waterThreshold} units of water.`);
+
+        profile.unlockedBadges.latest = `Lifetime water units for giving your cactus over ${waterThreshold} units of water.`;
     }
 
     // early bird badge rules check
     if(currentTime.hour() >= 4 && currentTime.hour() <= 7) {
         unlockedBadges.earlyBird = true;
-        unshiftUnlockHistory(profile, 'The early badge for checking your cactus between the hours of 4 to 7 am.');
+        unlockedBadges.latest = 'The early badge for checking your cactus between the hours of 4 to 7 am.';
     }
 
     // night owl badge rules check
     if(currentTime.hour() == 0 
         && (currentTime.hour() <= 3 && currentTime.minutes()) <= 59 ) {
         unlockedBadges.nightOwl = true;
-        unshiftUnlockHistory(profile, 'The night owl badge for check your cactus from midnight to 3 am.');
+        unlockedBadges.latest = 'The night owl badge for check your cactus from midnight to 3 am.';
     }
 
     //TODO investigate why changing back to dateOfBirthday still passes tests
@@ -835,7 +838,7 @@ const evaluateBadges = function(profile, currentTime) {
         }
         if(actualDuration.asDays() >= badgeDuration) {
             unlockedBadges.durations[badgeDuration] = true;
-            unshiftUnlockHistory(profile, `For keeping your cactus alive for ${badgeDuration} day${badgeDuration == 1 ? '' : 's'}`);
+            unlockedBadges.latest = `For keeping your cactus alive for ${badgeDuration} day${badgeDuration == 1 ? '' : 's'}`;
         } else {
             unlockedBadges.durations[badgeDuration] = false;
         }
@@ -845,7 +848,7 @@ const evaluateBadges = function(profile, currentTime) {
     if (!unlockedBadges.helicopterParent 
             && profile.timesChecked >= HELICOPTER_THRESHOLD) {
         unlockedBadges.helicopterParent = true;
-        unshiftUnlockHistory(profile, 'For hovering over your cactus like a helicopter parent by checking on your cactus 5 times in one day.')
+        unlockedBadges.latest = 'For hovering over your cactus like a helicopter parent by checking on your cactus 5 times in one day.';
     }
 
     return unlockedBadges
@@ -972,7 +975,7 @@ const cleanUpCactus = function(profile) {
     const newCactus = defaultCactus(profile.timeZone);
 
     profile.cactus = newCactus;
-    profile.badges = resetBadges(profile.unlockedBadges);
+    profile.unlockedBadges = resetBadges(profile.unlockedBadges);
 
     profile.timesChecked = 1;
 
@@ -990,7 +993,7 @@ const defaultProfile = async function (handlerInput) {
           
         },
         unlockedBadges: {
-            unlockHistory: [],
+            latest: '',
             waterUnits: [],
             earlyBird: false,
             nightOwl: false,
