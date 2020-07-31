@@ -2,7 +2,7 @@
 
 ## Webapp
 
-* Infinite loop somewhere on echo show devices that triggers infinite watering or blind toggling when pressed with a touch event.
+* Lack retries on rate limits and server problems.
 
 
 ## Alexa Skill
