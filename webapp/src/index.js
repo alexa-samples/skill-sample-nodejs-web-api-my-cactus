@@ -97,7 +97,7 @@ function update() {
         blinds.onClick(alexa);
     }
     if(pail.shouldClick(selectedObjSet)) {
-        pail.onClick(alexa);
+        pail.onClick(alexa, debugElement);
     }
     if(spider.shouldClick(selectedObjSet)) {
         spider.onClick(alexa);
@@ -116,7 +116,7 @@ function update() {
         blinds.update(delta);
         cactus.update(delta);
         
-    }
+    } 
     selector.deselect();
 }
 
@@ -210,12 +210,12 @@ function setupAlexa() {
     alexa.voice.onMicrophoneOpened(() => {
         // dimScreen();
         duckAudio();
-        cloudLog("microphone opened");
+        console.log("microphone opened");
     });
     alexa.voice.onMicrophoneClosed(() => {
         // undimScreen();
         restoreAudio();
-        cloudLog("microphone closed");
+        console.log("microphone closed");
     });
 
 }
@@ -488,7 +488,6 @@ function domClick(event) {
  * @param {*} event 
  */
 function domTouch(event) {
-    cloudLog("Touchdown! " + JSON.stringify(event.touches));
     onClickOrTouch(event.touches[0].clientX, event.touches[0].clientY);
 }
 

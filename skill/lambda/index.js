@@ -19,7 +19,7 @@ const moment = require('moment-timezone');
 
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 //TODO change this URL to your publicly accessible HTTPS endpoint.
-const webAppBaseURL = "https://8d5305074570.ngrok.io";
+const webAppBaseURL = "https://a85c00c18773.ngrok.io";
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
@@ -171,7 +171,6 @@ function supportsHTMLInterface(handlerInput) {
 
 const HasCactusLaunchRequestHandler = {
     canHandle(handlerInput) {
-        console.log('HasCactusLaunchRequestHandler', JSON.stringify(getProfile(handlerInput)));
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest'
             && getProfile(handlerInput).cactus.name;
     },
@@ -988,8 +987,7 @@ const loadProfileInterceptor = {
         const attributesManager = handlerInput.attributesManager;
         
         let profile = await attributesManager.getPersistentAttributes();
-        console.log("loadProfileInterceptor- profile", JSON.stringify(profile));
-        
+
         const timeZone = await getTimeZone(handlerInput);
         console.log("loadProfileInterceptor - timezone", timeZone);
         

@@ -27,17 +27,37 @@ module.exports = {
     water() {
         waterCactusAction.reset().play();
     },
-    onClick(alexa) {
-        console.log("Playing watering pail click");
-        waterCactusAction.reset().play();
-        if(alexa !== null) {
-            alexa.skill.sendMessage({
-                intent:"WaterCactusIntent"
-            });
-            cloudLog("Poked the Pail.");
-        }
-        if(debugLevel >= 1) {
-            infoElement.textContent = "poked watering pail";
-        }
+    onClick(alexa, textElement) {
+        const clickPromise = new Promise((resolve, reject) => {
+            if(debugLevel >= 1) {
+                console.log("Playing watering pail click");
+                infoElement.textContent = "poked watering pail";
+            }
+            waterCactusAction.reset().play();
+            if(alexa !== null) {
+                alexa.skill.sendMessage({
+                    intent:"WaterCactusIntent"
+                },
+                function(messageSendResponse) {
+                    textElement.textContent = JSON.stringify(messageSendResponse);
+                    console.log(messageSendResponse.statusCode);
+                    switch(messageSendResponse.statusCode) {
+                        case 500:
+                        case 429:
+                            //TODO check messageSendResponse.rateLimit.timeUntilResetMs and timeUntilNextRequestMs
+                            //USe these fields for smart retries split from 500 when this happens
+                            console.error(messageSendResponse.reason);
+                            reject(messageSendResponse.reason);
+                            break;
+                        case 200:
+                        default:
+                            resolve("Successfully called backend.");
+                    }
+                });
+            } else {
+                resolve("Alexa not enabled, animation successful.");
+            }
+        });
+        return clickPromise;
     }
 }
