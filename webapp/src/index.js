@@ -42,6 +42,8 @@ var NUMBER_GLBS = 6;//Update if adding another GLB to the game.
 //Loader information
 const sourceArtDir = "./assets/source-art/";
 const backgroundHealthyAsset = sourceArtDir + "Pete_Background-Healthy.png";
+const backgroundNeutralAsset = sourceArtDir + "Pete_Background-Neutral.png";
+const backgroundSickAsset = sourceArtDir + "Pete_Background-Sick.png";
 
 const SPIDER_TIMER = 5000;
 
@@ -256,7 +258,7 @@ function init() {
     controls.enableDamping = true;
 
     //Set the camera control limitations iff fullcontrols is disabled
-    if(!fullControls) {    
+    if(!fullControls) {
         controls.enableKeys = false;
         controls.enableZoom = false;
         const LOCKED_ANGLE = 60 * Math.PI / 180;
@@ -350,8 +352,15 @@ function refreshGameState(dataPayload) {
     blinds.init(cactusState, debugLevel);
     cactus.init(cactusState, debugLevel);
     
-    // Adding the background texture. TODO make this change based on backend information
-    const bgTexture = new THREE.TextureLoader().load(backgroundHealthyAsset);
+    // Adding the background texture.
+    let bgTexture;
+    if(cactusState.happiness === 1) {
+        bgTexture = new THREE.TextureLoader().load(backgroundHealthyAsset);
+    } else if(cactusState.happiness === 0) {
+        bgTexture = new THREE.TextureLoader().load(backgroundNeutralAsset);
+    } else {
+        bgTexture = new THREE.TextureLoader().load(backgroundSickAsset);
+    }
     scene.background = bgTexture;
 }
 
@@ -479,9 +488,7 @@ function domClick(event) {
  * @param {*} event 
  */
 function domTouch(event) {
-    console.log(`clientX,Y ${event.touches[0].clientX} ${event.touches[0].clientY}`);
-    console.log(`pageX,Y ${event.touches[0].pageX} ${event.touches[0].clientY}`);
-    console.log(`ScreenX,Y ${event.touches[0].screenX} ${event.touches[0].screenY}`);
+    cloudLog("Touchdown! " + JSON.stringify(event.touches));
     onClickOrTouch(event.touches[0].clientX, event.touches[0].clientY);
 }
 

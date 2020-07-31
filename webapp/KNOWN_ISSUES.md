@@ -2,9 +2,9 @@
 
 ## Webapp
 
-* Screen resolution started to not work on echo show 2.
+* Infinite loop somewhere on echo show devices that triggers infinite watering or blind toggling when pressed with a touch event.
 
 
 ## Alexa Skill
 
-Unknown.
+* Reprompt is strange when playing watering sounds with the visuals. 

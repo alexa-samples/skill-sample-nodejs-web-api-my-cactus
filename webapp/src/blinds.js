@@ -66,7 +66,6 @@ module.exports = {
                 intent:blindsOpen? "OpenBlindsIntent" : "CloseBlindsIntent",
                 clicked:"blinds"
             });
-            cloudLog("Poked the blinds.");
         }
         if(debugLevel >= 1) {
             infoElement.textContent = "poked blinds";

@@ -724,9 +724,12 @@ const getStatus = function(profile) {
 
     let statusMessage;
     if (!needs.water && !needs.comfort) {
+        //Cactus is happy
+        profile.cactus.happiness = 1;
         statusMessage = `${profile.cactus.name} ${getRandomItemFromList(NO_NEEDS)} ${getRandomItemFromList(WISDOM_MESSAGES)}`;        
     } else if (needs.water || needs.comfort) {
-        
+        //cactus is nuetral
+        profile.cactus.happiness = 0;
         // TODO: move this to API gateway and make sure that the items are not global 
         const ONE_NEED = [
             `${profile.cactus.name} is feeling fine.`,
@@ -744,7 +747,9 @@ const getStatus = function(profile) {
         statusMessage = getRandomItemFromList(ONE_NEED);
         
     } else {
-        
+        //Sad cactus
+        profile.cactus.happiness = -1;
+
         statusMessage = `${profile.cactus.name} ${getRandomItemFromList(TWO_NEEDS)}`;
     }
     
@@ -1025,7 +1030,8 @@ const defaultCactus = function(timeZone) {
         dayOfBirth: moment.now(), //TODO: rename to dateOfBirth
         daysAlive: 0,
         blindState: `${isItDaylight(moment.now(), timeZone) ? 'closed' : 'open'}`,
-        lastUpdated: moment.now()
+        lastUpdated: moment.now(),
+        happiness:0
     };
 };
 
