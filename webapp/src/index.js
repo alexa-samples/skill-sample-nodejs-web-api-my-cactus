@@ -94,7 +94,7 @@ function update() {
         cactus.onClick(alexa);
     }
     if(blinds.shouldClick(selectedObjSet)) {
-        blinds.onClick(alexa);
+        blinds.onClick(alexa, debugElement);
     }
     if(pail.shouldClick(selectedObjSet)) {
         pail.onClick(alexa, debugElement);
