@@ -85,6 +85,7 @@ function update() {
         console.log("Camera Rot: " + JSON.stringify(camera.rotation));
     }
 
+    //Handle selections
     const selectedObjSet = selector.getSelectedObjSet();
     if(cactus.shouldClick(selectedObjSet)) {
         screenShake.shake(camera, 500, 200, 200);//TODO figure out or cut
@@ -112,6 +113,7 @@ function update() {
         pail.update(delta);
         blinds.update(delta);
         cactus.update(delta);
+        
     }
     selector.deselect();
 }
@@ -173,20 +175,30 @@ function setupAlexa() {
             debugElement.textContent = JSON.stringify(message);
         }
 
-        refreshGameState(message.gameState);
+        if(message.gameState) {
+            refreshGameState(message.gameState);
+        } else {
+            console.error("Game state not found here is the payload: " + JSON.stringify(message));
+        }
 
         //If in intent exists and matches one of the below, play all local animations/sounds.
-        if(message.intent) {
+        if(message.playAnimation === true) {
             switch(message.intent) {
                 case "water":
                     pail.water();
                     break;
-                // case "blindsDown"://todo test this and blinds up
-                //     blinds.lower();
-                //     break;
-                // case "blindsUp":
-                //     blinds.raise();
-                //     break;
+                case "blindsDown"://todo test this and blinds up
+                    blinds.lower();
+                    break;
+                case "blindsUp":
+                    blinds.raise();
+                    break;
+                case "getStatus":
+                case "newCactus":
+                    cactus.dance();
+                    break;
+                case "checkBadges":
+                    //TODO
                 default:
                     return;
             }
@@ -216,13 +228,13 @@ function undimScreen() {
 
 function duckAudio() {
     listeners.forEach(listener => {
-        listener.setMasterAudio(.4);
+        listener.setMasterVolume(.4);
     });
 }
 
 function restoreAudio() {
     listeners.forEach(listener => {
-        listener.setMasterAudio(1);
+        listener.setMasterVolume(1);
     });
 }
 
@@ -403,9 +415,10 @@ function setUpScene() {
     camera.position.set(12.49529444321625, 453.77789466125455, 652.0444919524163); // set the proper position of the camera
     controls.update();
 
-    //Set up initial Game values. Acts on the assets
-    refreshGameState(startInfo);
-
+    //Set up initial Game values. Acts on the assets. DO not call if Alexa was loaded as we will clobber it with mock data.
+    if(!alexaLoaded) {
+        refreshGameState(startInfo);
+    }
 }
 
 function setupLights() {

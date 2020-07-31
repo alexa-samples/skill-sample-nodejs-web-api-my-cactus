@@ -19,7 +19,7 @@ const moment = require('moment-timezone');
 
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 //TODO change this URL to your publicly accessible HTTPS endpoint.
-const webAppBaseURL = "https://74d93d56ba08.ngrok.io";
+const webAppBaseURL = "https://8d5305074570.ngrok.io";
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
@@ -113,7 +113,8 @@ const WISDOM_MESSAGES = [
     "The dog taught me this today. It means go away or I'll eat you. <dog bark FX> ",
     "The dog taught me this today. It means I'm hungry. <dog bark FX> ",
     "When I have a thorny day, I find my happy place. Today my happy place is ... <place sound FX>",
-    "When I get sand in my spines, I find my happy place. Today my happy place is ... <place sound FX>",    
+    "When I get sand in my spines, I find my happy place. Today my happy place is ... <place sound FX>",
+    "Cacti <break time='.2s'/>+ Cact, you <break time='.3s'/>= Cact, us."
 ];
 
 const LaunchRequestHandler = {
@@ -183,8 +184,6 @@ const HasCactusLaunchRequestHandler = {
         
         let speakOutput = status.message;
         
-        conditionallyLaunchWebApp(handlerInput);
-        
         if ( profile.cactus.healthLevel <= 0 ) {
             speakOutput = `${FX_DEATH_TONE} ${profile.cactus.name} ${getRandomItemFromList(DEATH_NOTES)} `;
             speakOutput += "Want to start over with a new cactus?";
@@ -197,6 +196,8 @@ const HasCactusLaunchRequestHandler = {
             attributesManager.setSessionAttributes(profile);   
             
         }
+        
+        conditionallyLaunchWebApp(handlerInput);
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -252,6 +253,17 @@ const CaptureDestinationHandler = {
             repromptOutput = `${name} is cold, gets chilly at night! You can close the blinds.`;        
         }
         
+        if(supportsHTMLInterface(handlerInput)) {
+            handlerInput.responseBuilder.addDirective({
+                "type":"Alexa.Presentation.HTML.HandleMessage",
+                "message": {
+                    "intent":"newCactus",
+                    "playAnimation": true,
+                    "gameState": profile
+                }
+            });
+        }
+        
         
         return handlerInput.responseBuilder
             .speak(speakOutput + repromptOutput)
@@ -303,7 +315,9 @@ const WaterCactusIntentHandler = {
             handlerInput.responseBuilder.addDirective({
                 "type":"Alexa.Presentation.HTML.HandleMessage",
                 "message": {
-                    "intent":"water"
+                    "intent":"water",
+                    "playAnimation": Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest',
+                    "gameState": profile
                 }
             });
         }
@@ -417,6 +431,16 @@ const CheckBadgesIntentHandler = {
 
         speakOutput += "What would you like to do?";
         
+        if(supportsHTMLInterface(handlerInput)) {
+            handlerInput.responseBuilder.addDirective({
+                "type":"Alexa.Presentation.HTML.HandleMessage",
+                "message": {
+                    "intent":"checkBadges",// only play animation when it is a voice request.
+                    "gameState": profile
+                }
+            });
+        }
+        
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .reprompt(speakOutput)
@@ -440,6 +464,17 @@ const GetStatusIntentHandler = {
         const status = getStatus(profile);
         
         const speakOutput = status.message;
+        
+        if(supportsHTMLInterface(handlerInput)) {
+            handlerInput.responseBuilder.addDirective({
+                "type":"Alexa.Presentation.HTML.HandleMessage",
+                "message": {
+                    "intent":"getStatus",
+                    "playAnimation": true,
+                    "gameState": profile
+                }
+            });
+        }
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -491,6 +526,17 @@ const HasCactusOpenBlindsIntentHandler = {
             attributesManager.setSessionAttributes(profile);            
         }
         
+        if(supportsHTMLInterface(handlerInput)) {
+            handlerInput.responseBuilder.addDirective({
+                "type":"Alexa.Presentation.HTML.HandleMessage",
+                "message": {
+                    "intent":"blindsUp",// only play animation when it is a voice request.
+                    "playAnimation": Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest',
+                    "gameState": profile
+                }
+            });
+        }
+        
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .reprompt(speakOutput)
@@ -532,6 +578,18 @@ const HasCactusCloseBlindsIntentHandler = {
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);            
         }
+        
+        if(supportsHTMLInterface(handlerInput)) {
+            handlerInput.responseBuilder.addDirective({
+                "type":"Alexa.Presentation.HTML.HandleMessage",
+                "message": {
+                    "intent":"blindsDown",// only play animation when it is a voice request.
+                    "playAnimation": Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest',
+                    "gameState": profile
+                }
+            });
+        }
+        
         return handlerInput.responseBuilder
             .speak(speakOutput)
             .reprompt(speakOutput)
@@ -963,6 +1021,7 @@ const defaultCactus = function(timeZone) {
     return {
         waterLevel: 5, //TODO: thinking about randomly generating this with a threshold
         healthLevel: 100,
+        waterMax: WATER_THRESHOLD,//TODO make this not static
         dayOfBirth: moment.now(), //TODO: rename to dateOfBirth
         daysAlive: 0,
         blindState: `${isItDaylight(moment.now(), timeZone) ? 'closed' : 'open'}`,

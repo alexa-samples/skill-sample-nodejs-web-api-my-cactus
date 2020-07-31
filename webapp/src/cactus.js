@@ -23,6 +23,8 @@ const CLICKABLE_OBJS = [CACTUS_BODY_OBJ_NAME, CACTUS_LG_ARM_OBJ_NAME, CACTUS_SM_
 
 module.exports = {
     update(delta) {
+        cactusMixer.update(delta);
+
         //CactusBody is a parent object of the other cactus pieces. Scaling scales ALL.
         setObjScaleAndPosition(cactusBody, happyDays, FIRST_ARM_AGE);
 
@@ -43,7 +45,6 @@ module.exports = {
             cactusArmSmall.visible = false;
             cactusArmLarge.visible = true;
         }
-        cactusMixer.update(delta);
     },
     init(startInfo, debugLevel) {
         happyDays = startInfo.daysAlive;

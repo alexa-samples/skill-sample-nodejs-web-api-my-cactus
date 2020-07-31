@@ -15,13 +15,6 @@ module.exports = {
         this.debugLevel = debugLevel;
         blindsOpen = startInfo.blindState === "open";
         console.log(startInfo);
-        if(blindsOpen) {
-            this.raise();
-            console.log("raising blinds");
-        } else {
-            this.lower();
-            console.log("lowering blinds");
-        }
     },
     shouldClick(selectedObjSet) {
         return selectedObjSet.has(BLINDS_OBJ_NAME);
@@ -39,6 +32,15 @@ module.exports = {
         blindsDownAction = blindsMixerDown.clipAction(blindsDownClip);
         blindsDownAction.clampWhenFinished = true;
         blindsDownAction.loop = THREE.LoopOnce;
+
+        //After the model has loaded, get it into the right state. 
+        if(blindsOpen) {
+            this.raise();
+            console.log("raising blinds");
+        } else {
+            this.lower();
+            console.log("lowering blinds");
+        }
     },
     lower() {
         // blindsMixerDown.stopAllAction();
