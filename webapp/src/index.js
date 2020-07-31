@@ -14,12 +14,16 @@ const spider = require('./spider');
 var debugLevel = 1;
 var fullControls = false;
 
+//audio listeners
+var listeners = []
+
 var infoElement = document.getElementById("info");
 var debugElement = document.getElementById("debugInfo");
 var canvas = document.getElementById("webGLCanvas");
 var waterStatusBar = document.getElementById("waterBar"); 
 var healthSatusBar = document.getElementById("healthBar"); 
 var nameElement = document.getElementById("name"); 
+infoElement.style.display = "none";
 
 if(debugLevel < 1) { // hide the debug element if no debugging.
     infoElement.style.display = "none";
@@ -37,9 +41,11 @@ var NUMBER_GLBS = 6;//Update if adding another GLB to the game.
 
 //Loader information
 const sourceArtDir = "./assets/source-art/";
+const backgroundHealthyAsset = sourceArtDir + "Pete_Background-Healthy.png";
+const backgroundNeutralAsset = sourceArtDir + "Pete_Background-Neutral.png";
+const backgroundSickAsset = sourceArtDir + "Pete_Background-Sick.png";
 
 const SPIDER_TIMER = 5000;
-init();
 
 //Render loop
 var render = function () {
@@ -47,6 +53,25 @@ var render = function () {
     renderer.render(scene, camera);
     update();
 };
+
+//Actual code execution
+try {
+    init();
+
+    //Start the process.
+    render();
+    
+    //Create a Spider after some time.
+    window.setTimeout(function() {
+        spider.spawnSpider();
+    }, SPIDER_TIMER);
+    
+    console.log("post init");
+} catch(err) {
+    const errMessage = `error: ${err.name}, message: ${err.message}, stack: ${err.stack}`;
+    debugElement.textContent = JSON.stringify(errMessage);
+    cloudLog(errMessage);
+}
 
 //Update function
 function update() {
@@ -62,6 +87,7 @@ function update() {
         console.log("Camera Rot: " + JSON.stringify(camera.rotation));
     }
 
+    //Handle selections
     const selectedObjSet = selector.getSelectedObjSet();
     if(cactus.shouldClick(selectedObjSet)) {
         screenShake.shake(camera, 500, 200, 200);//TODO figure out or cut
@@ -89,23 +115,10 @@ function update() {
         pail.update(delta);
         blinds.update(delta);
         cactus.update(delta);
+        
     }
     selector.deselect();
 }
-
-//Start the process.
-render();
-
-//Create a Spider after some time.
-window.setTimeout(function() {
-    spider.spawnSpider();
-}, SPIDER_TIMER);
-
-console.log("post init");
-
-// Adding the background texture.
-// const bgTexture = new THREE.TextureLoader().load('./assets/Pete_Background-Neutral.png');
-// scene.background = bgTexture;
 
 /**
  * Logs a message locally and if alexa is initialized, pushes the message to the lambda to log.
@@ -139,7 +152,7 @@ function setupAlexa() {
             debugElement.textContent = 'startup succeeded, time to start my game';
             infoElement.textContent = JSON.stringify(message);
         }
-        startInfo = message;
+        refreshGameState(message);
         //Start BG Music when we know it is an Alexa-enabled device.
         bgMusic.play();
     });
@@ -152,9 +165,11 @@ function setupAlexa() {
     });
     alexa.speech.onStarted(() => {
         console.log('speech is playing');
+        duckAudio();
     });
     alexa.speech.onStopped(() => {
         console.log('speech stopped playing');
+        restoreAudio();
     });
     // Called every time a data payload comes from backend as a message Directive.
     alexa.skill.onMessage((message) => {
@@ -162,8 +177,14 @@ function setupAlexa() {
             debugElement.textContent = JSON.stringify(message);
         }
 
+        if(message.gameState) {
+            refreshGameState(message.gameState);
+        } else {
+            console.error("Game state not found here is the payload: " + JSON.stringify(message));
+        }
+
         //If in intent exists and matches one of the below, play all local animations/sounds.
-        if(message.intent) {
+        if(message.playAnimation === true) {
             switch(message.intent) {
                 case "water":
                     pail.water();
@@ -174,14 +195,49 @@ function setupAlexa() {
                 case "blindsUp":
                     blinds.raise();
                     break;
+                case "getStatus":
+                case "newCactus":
+                    cactus.dance();
+                    break;
+                case "checkBadges":
+                    //TODO
                 default:
                     return;
             }
         }
     });
-    //TODO add audio ducking.
+    //TODO add screen dimming.
+    alexa.voice.onMicrophoneOpened(() => {
+        // dimScreen();
+        duckAudio();
+        cloudLog("microphone opened");
+    });
+    alexa.voice.onMicrophoneClosed(() => {
+        // undimScreen();
+        restoreAudio();
+        cloudLog("microphone closed");
+    });
 
+}
 
+function dimScreen() {
+
+}
+
+function undimScreen() {
+
+}
+
+function duckAudio() {
+    listeners.forEach(listener => {
+        listener.setMasterVolume(.4);
+    });
+}
+
+function restoreAudio() {
+    listeners.forEach(listener => {
+        listener.setMasterVolume(1);
+    });
 }
 
 // initializes the scene, camera, and renderer.
@@ -202,7 +258,7 @@ function init() {
     controls.enableDamping = true;
 
     //Set the camera control limitations iff fullcontrols is disabled
-    if(!fullControls) {    
+    if(!fullControls) {
         controls.enableKeys = false;
         controls.enableZoom = false;
         const LOCKED_ANGLE = 60 * Math.PI / 180;
@@ -255,11 +311,13 @@ function init() {
 function loadAudio() {
     //web audio setup.
     var listener1 = new THREE.AudioListener();
+    listeners.push(listener1);
     spider.loadAudio(listener1);
     camera.add(listener1);
 
     var listener2 = new THREE.AudioListener();
     loadBackgroundMusic(listener2);
+    listeners.push(listener2);
     // camera.add(listener2);
 }
 
@@ -267,30 +325,43 @@ function loadBackgroundMusic(listener) {
     var audioLoader = new THREE.AudioLoader();
 
     bgMusic = new THREE.Audio(listener);
-    audioLoader.load( './assets/audio/video_tunes_01_loopable.mp3', function(buffer) {
+    audioLoader.load('./assets/audio/video_tunes_01_loopable.mp3', function(buffer) {
         bgMusic.setBuffer(buffer);
-        bgMusic.setVolume(0.03);
+        bgMusic.setVolume(0.06);
         bgMusic.setLoop(true);
     });
 }
 
 /**
  * 
- * @param {*} dataPayload from the web app startup. Comes from Alexa backend. Call only once assets are initialized
+ * @param {*} dataPayload from the Alexa backend at startup and on other responses. 
+ * Call only once assets are initialized and on every time there is a state update.
  */
-function setUpGameState(dataPayload) {
+function refreshGameState(dataPayload) {
     cactusState = dataPayload.cactus;
     if(debugLevel >= 1) {
         console.log(cactusState.waterLevel);
     }
     //initialize state of visible DOM elements not controlled by a class.
     nameElement.textContent = cactusState.name;
+    waterStatusBar.max = cactusState.waterMax;
     waterStatusBar.value = cactusState.waterLevel;
     healthSatusBar.value = cactusState.healthLevel;
 
     //initialize state of objects
-    blinds.init(startInfo.cactus, debugLevel);
-    cactus.init(startInfo.cactus, debugLevel);
+    blinds.init(cactusState, debugLevel);
+    cactus.init(cactusState, debugLevel);
+    
+    // Adding the background texture.
+    let bgTexture;
+    if(cactusState.happiness === 1) {
+        bgTexture = new THREE.TextureLoader().load(backgroundHealthyAsset);
+    } else if(cactusState.happiness === 0) {
+        bgTexture = new THREE.TextureLoader().load(backgroundNeutralAsset);
+    } else {
+        bgTexture = new THREE.TextureLoader().load(backgroundSickAsset);
+    }
+    scene.background = bgTexture;
 }
 
 function loadOtherScenes(gltfLoader) {
@@ -353,9 +424,10 @@ function setUpScene() {
     camera.position.set(12.49529444321625, 453.77789466125455, 652.0444919524163); // set the proper position of the camera
     controls.update();
 
-    //Set up initial Game values. Acts on the assets
-    setUpGameState(startInfo);
-
+    //Set up initial Game values. Acts on the assets. DO not call if Alexa was loaded as we will clobber it with mock data.
+    if(!alexaLoaded) {
+        refreshGameState(startInfo);
+    }
 }
 
 function setupLights() {
@@ -416,9 +488,7 @@ function domClick(event) {
  * @param {*} event 
  */
 function domTouch(event) {
-    console.log(`clientX,Y ${event.touches[0].clientX} ${event.touches[0].clientY}`);
-    console.log(`pageX,Y ${event.touches[0].pageX} ${event.touches[0].clientY}`);
-    console.log(`ScreenX,Y ${event.touches[0].screenX} ${event.touches[0].screenY}`);
+    cloudLog("Touchdown! " + JSON.stringify(event.touches));
     onClickOrTouch(event.touches[0].clientX, event.touches[0].clientY);
 }
 
@@ -433,7 +503,7 @@ function onClickOrTouch(screenX, screenY) {
     const screenVector = normalize2DPoint(nonNormalPos);
     const worldVector = new THREE.Vector3(screenX, screenY, -1).unproject(camera);
     if(debugLevel >= 1) {
-        debugElement.textContent = "world  vector: " + JSON.stringify(worldVector) 
+        infoElement.textContent = "world  vector: " + JSON.stringify(worldVector) 
             + "\nclick  vector: " + JSON.stringify(nonNormalPos) 
             + "\nnormal vector: " + JSON.stringify(screenVector);
     }

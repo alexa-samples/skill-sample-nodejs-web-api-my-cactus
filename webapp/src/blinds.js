@@ -1,4 +1,4 @@
-var blindsUpAction, blindsDownAction, blindsMixer;
+var blindsUpAction, blindsDownAction, blindsMixerUp, blindsMixerDown;
 var debugLevel;
 const THREE = require('three');
 const BLINDS_UP_ANIM = "animateBlindsUP";
@@ -8,12 +8,32 @@ const BLINDS_OBJ_NAME = "blinds";
 
 module.exports = {
     update(delta) {
-        blindsMixer.update(delta);
+        blindsMixerUp.update(delta);
+        blindsMixerDown.update(delta);
     },
     init(startInfo, debugLevel) {
         this.debugLevel = debugLevel;
         blindsOpen = startInfo.blindState === "open";
         console.log(startInfo);
+    },
+    shouldClick(selectedObjSet) {
+        return selectedObjSet.has(BLINDS_OBJ_NAME);
+    },
+    load(gltf) {
+        blindsMixerUp = new THREE.AnimationMixer(gltf.scene);
+        blindsMixerDown = new THREE.AnimationMixer(gltf.scene);
+        let blindsUpClip = THREE.AnimationClip.findByName(gltf.animations, BLINDS_UP_ANIM);
+        let blindsDownClip = THREE.AnimationClip.findByName(gltf.animations, BLINDS_DOWN_ANIM);
+
+        blindsUpAction = blindsMixerUp.clipAction(blindsUpClip);
+        blindsUpAction.clampWhenFinished = true;
+        blindsUpAction.loop = THREE.LoopOnce;
+
+        blindsDownAction = blindsMixerDown.clipAction(blindsDownClip);
+        blindsDownAction.clampWhenFinished = true;
+        blindsDownAction.loop = THREE.LoopOnce;
+
+        //After the model has loaded, get it into the right state. 
         if(blindsOpen) {
             this.raise();
             console.log("raising blinds");
@@ -22,41 +42,23 @@ module.exports = {
             console.log("lowering blinds");
         }
     },
-    shouldClick(selectedObjSet) {
-        return selectedObjSet.has(BLINDS_OBJ_NAME);
-    },
-    load(gltf) {
-        //TODO fix animation setup
-        blindsMixer = new THREE.AnimationMixer(gltf.scene);
-        let blindsUpClip = THREE.AnimationClip.findByName(gltf.animations, BLINDS_UP_ANIM);
-        let blindsDownClip = THREE.AnimationClip.findByName(gltf.animations, BLINDS_DOWN_ANIM);
-
-        blindsUpAction = blindsMixer.clipAction(blindsUpClip);
-        // blindsUpAction.clampWhenFinished = true;
-        blindsUpAction.loop = THREE.LoopOnce;
-
-        blindsDownAction = blindsMixer.clipAction(blindsDownClip);
-        // blindsDownAction.clampWhenFinished = true;
-        blindsDownAction.loop = THREE.LoopOnce;
-    },
     lower() {
-        blindsMixer.stopAllAction();
+        // blindsMixerDown.stopAllAction();
         blindsDownAction.reset().play();
-        console.log(blindsMixer);
+        blindsOpen = false;
     },
     raise() {
-        blindsMixer.stopAllAction();
+        // blindsMixerUp.stopAllAction();
         blindsUpAction.reset().play();
+        blindsOpen = true;
     },
     onClick(alexa) {
         console.log("Clicked Blinds");
         // blindsSound.play();
         if(blindsOpen) {
-            blindsOpen = false;
-            blindsDownAction.reset().play()
+            this.lower();
         } else {
-            blindsOpen = true;
-            blindsUpAction.reset().play()
+            this.raise();
         }
 
         if(alexa != null) {
@@ -64,7 +66,6 @@ module.exports = {
                 intent:blindsOpen? "OpenBlindsIntent" : "CloseBlindsIntent",
                 clicked:"blinds"
             });
-            cloudLog("Poked the blinds.");
         }
         if(debugLevel >= 1) {
             infoElement.textContent = "poked blinds";

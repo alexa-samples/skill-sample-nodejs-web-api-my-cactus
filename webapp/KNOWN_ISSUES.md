@@ -2,9 +2,9 @@
 
 ## Webapp
 
-* Blind animations: The blinds do not end in the appropriate position. Clamping the animation causes other issues. It appears to be blending with the base state, despite disabling all other animations on the mixer.
-* 
+* Infinite loop somewhere on echo show devices that triggers infinite watering or blind toggling when pressed with a touch event.
+
 
 ## Alexa Skill
 
-Unknown.
+* Reprompt is strange when playing watering sounds with the visuals. 

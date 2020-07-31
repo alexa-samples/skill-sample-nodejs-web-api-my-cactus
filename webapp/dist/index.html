@@ -22,11 +22,14 @@
                 background-color: rgba(0,0,0,0.3); /* Black background with opacity */
                 top: 85%
             }
-            #waterBar {
+            .scrollable {
+                overflow-y:auto
+            }
+            .water {
                 right: 10%;
                 top: 60%
             }
-            #healthBar {
+            .health {
                 right: 10%;
                 top: 65%
             }
@@ -41,10 +44,16 @@
         <div id="container">
             <canvas id="webGLCanvas"></canvas>            
             <div class="hud" id="name">My Cactus</div>
-            <progress class="hud" id="waterBar" max="100"></progress>
-            <progress class="hud" id="healthBar" max="100"></progress>
-            <div class="hud" id="info">General Info</div>
-            <div class="hud" id="debugInfo">Debug</div>
+            <div class="hud water">
+                <progress id="waterBar" max="100"></progress>
+                <div>Water</div>
+            </div>
+            <div class="health hud">
+                <progress id="healthBar" max="100"></progress>
+                <div>Health</div>
+            </div>
+            <div class="hud scrollable" id="info">General Info</div>
+            <div class="hud scrollable" id="debugInfo">Debug</div>
         </div>
         <script src="main.js"></script>
     </body>
