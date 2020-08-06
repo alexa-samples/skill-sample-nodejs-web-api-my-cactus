@@ -4,7 +4,7 @@ const s3SigV4Client = new AWS.S3({
     signatureVersion: 'v4'
 });
 
-module.exports.getS3PreSignedUrl = function getS3PreSignedUrl(s3ObjectKey) {
+const getS3PreSignedUrl = function(s3ObjectKey) {
 
     const bucketName = process.env.S3_PERSISTENCE_BUCKET;
     const s3PreSignedUrl = s3SigV4Client.getSignedUrl('getObject', {
@@ -14,4 +14,29 @@ module.exports.getS3PreSignedUrl = function getS3PreSignedUrl(s3ObjectKey) {
     });
     console.log(`Util.s3PreSignedUrl: ${s3ObjectKey} URL ${s3PreSignedUrl}`);
     return s3PreSignedUrl;
+
+}
+
+const getTimeZone = async function(handlerInput, deviceId) {
+    
+    const serviceClientFactory = handlerInput.serviceClientFactory;
+    
+    let userTimeZone;
+    try {
+        const upsServiceClient = serviceClientFactory.getUpsServiceClient();
+        userTimeZone = await upsServiceClient.getSystemTimeZone(deviceId);
+        
+    } catch (error) {
+        if (error.name !== 'ServiceError') {
+            return handlerInput.responseBuilder.speak("There was a problem connecting to the service.").getResponse();
+        }
+        console.log('error', error.message);
+    }    
+    
+    return userTimeZone
+}
+
+module.exports = {
+    getS3PreSignedUrl,
+    getTimeZone
 }

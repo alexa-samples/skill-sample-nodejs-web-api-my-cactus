@@ -1,0 +1,14 @@
+{
+  "cactus": {
+    "waterLevel": 25,
+    "healthLevel": 100,
+    "dayOfBirth": 1588890484157,
+    "daysAlive": 0,
+    "blindState": "open|closed",
+    "isCold": false,
+    "lastUpdated": 1588890484157,
+    "latestInteraction": 1588895633166,
+    "name": "Sharpie Sharp"
+  },
+  "timeZone": "America/New_York"
+}
