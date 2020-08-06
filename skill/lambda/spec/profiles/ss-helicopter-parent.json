@@ -1,0 +1,34 @@
+{
+    "cactus": {
+      "waterLevel": 5,
+      "healthLevel": 100,
+      "dayOfBirth": 1594935015208,
+      "daysAlive": 0,
+      "blindState": "closed",
+      "lastUpdated": 1594935015213,
+      "name": "Juniper"
+    },
+    "lifeTime": {
+      "waterUnits": 0
+    },
+    "unlockedBadges": {
+      "unlockHistory": [],
+      "waterUnits": [],
+      "earlyBird": false,
+      "nightOwl": false,
+      "durations": {
+        "1": false,
+        "3": false,
+        "7": false,
+        "14": false,
+        "30": false,
+        "90": false,
+        "180": false,
+        "365": false
+      },
+      "helicopterParent": false
+    },
+    "timesChecked": 6,
+    "latestInteraction": 1594935563645,
+    "timeZone": "America/New_York"
+  }

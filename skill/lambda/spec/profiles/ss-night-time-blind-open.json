@@ -1,0 +1,24 @@
+{
+    "lifeTime": {
+      "waterUnits": 100
+    },
+    "cactus": {
+      "waterLevel": 20,
+      "healthLevel": 100,
+      "dayOfBirth": 1588890484157,
+      "daysAlive": 0,
+      "blindState": "open",
+      "isCold": false,
+      "lastUpdated": 1588890484157,
+      "latestInteraction": 1589514064719,
+      "name": "Sharpie Sharp"
+    },
+    "timeZone": "America/New_York",
+    "timesChecked": 5,
+    "unlockedBadges": {
+      "waterUnits": [],
+      "earlyBird": false,
+      "nightOwl": false,
+      "durations": {}
+  }
+}
