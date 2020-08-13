@@ -1,18 +1,8 @@
 const isItDaylight = require('./isItDaylight');
 const moment = require('moment-timezone');
+const SOUND_FX = require('./soundFX');
 
-const DEATH_NOTES = [
-    "is dead.",
-    "has passed away.",
-    "has met a sandy grave.",
-    "has croaked.",
-    "has expired.",
-    "has succumbed to neglect.",
-    "has kicked the bucket.",
-    "has gone to meet its maker. Whoever that was.",
-    "has departed for greener pastures. Or maybe it was sandier deserts. Anyway ...",
-    "has returned to the great cactus patch in the Amazon cloud."
-];
+const WATER_THRESHOLD = 20;
 
 const NO_NEEDS = [
     "is healthy.",
@@ -103,53 +93,86 @@ const getNeeds = function(profile) {
 const getStatus = function(profile) {
     const needs = getNeeds(profile);
 
+    const status = {
+        alive: true,
+        needs: needs
+    };
+
+
+
     let statusMessage;
-    if (!needs.water && !needs.comfort) {
-        statusMessage = `${profile.cactus.name} ${getRandomItemFromList(NO_NEEDS)} ${getRandomItemFromList(WISDOM_MESSAGES)}`;        
-    } else if (needs.water || needs.comfort) {
-        
-        // TODO: move this to API gateway and make sure that the items are not global 
-        const ONE_NEED = [
-            `${profile.cactus.name} is feeling fine.`,
-            `${profile.cactus.name} is feeling just fine.`,
-            `All is OK with ${profile.cactus.name}.`,
-            `All is fine with ${profile.cactus.name}.`,
-            `${profile.cactus.name} is feeling just OK.`,
-            `${profile.cactus.name} is feeling indifferent.`,
-            `${profile.cactus.name} is doing alright.`,
-            `${profile.cactus.name} is doing alright, considering the circumstances.`,
-            `${profile.cactus.name} is feeling neutral right now.`,
-            `${profile.cactus.name} is feeling a bit blase.`, 
-        ];
-        
-        statusMessage = getRandomItemFromList(ONE_NEED);
-        
-    } else {
-        
-        statusMessage = `${profile.cactus.name} ${getRandomItemFromList(TWO_NEEDS)}`;
-    }
-    
     let prompt = "";
-    if(needs.water) {
-        prompt = `You can water ${profile.cactus.name}.`;
-    }
-    
-    if (needs.water && needs.comfort) {
-        prompt += " or ";
-    }
-    
-    if (needs.comfort) {
-        prompt +=  ` you can ${profile.cactus.blindState === 'closed' ?  'open' : 'close'} the blinds.`;
-    }
-    
-    if (needs.water && needs.comfort) {
-        prompt += " Which do you want?";
-    }
+    // Determined that the cactus is dead.
+    if (profile.cactus.healthLevel <= 0 
+            || profile.cactus.waterLevel >= WATER_THRESHOLD 
+            || profile.cactus.waterLevel <= (-1 * WATER_THRESHOLD)) {
 
+        // dehydration, >= -20 water
+        // drowning,   <=20 water
+        // neglect,    0 health
+
+        status.alive = false;
+
+        let causeOfDeath = "neglect";
+        if (profile.cactus.waterLevel <= (-1 * WATER_THRESHOLD)) {
+            causeOfDeath = "dehydration";
+        } else if (profile.cactus.waterLevel >= WATER_THRESHOLD) {
+            causeOfDeath = "drowning";
+        }
+        status.causeOfDeath = causeOfDeath;
+    
+        statusMessage = `${SOUND_FX.DEATH_TONE} ${profile.cactus.name} ${getDeathNote(causeOfDeath)} `;
+        prompt = "Want to start over with a new cactus?";
+    }
+    // otherwise it has needs
+    else {
+        
+        if (!needs.water && !needs.comfort) {
+            statusMessage = `${profile.cactus.name} ${getRandomItemFromList(NO_NEEDS)} ${getRandomItemFromList(WISDOM_MESSAGES)}`;        
+        } else if (needs.water || needs.comfort) {
+            
+            // TODO: move this to API gateway and make sure that the items are not global 
+            const ONE_NEED = [
+                `${profile.cactus.name} is feeling fine.`,
+                `${profile.cactus.name} is feeling just fine.`,
+                `All is OK with ${profile.cactus.name}.`,
+                `All is fine with ${profile.cactus.name}.`,
+                `${profile.cactus.name} is feeling just OK.`,
+                `${profile.cactus.name} is feeling indifferent.`,
+                `${profile.cactus.name} is doing alright.`,
+                `${profile.cactus.name} is doing alright, considering the circumstances.`,
+                `${profile.cactus.name} is feeling neutral right now.`,
+                `${profile.cactus.name} is feeling a bit blase.`, 
+            ];
+            
+            statusMessage = getRandomItemFromList(ONE_NEED);
+            
+        } else {
+            
+            statusMessage = `${profile.cactus.name} ${getRandomItemFromList(TWO_NEEDS)}`;
+        }
+        
+        if(needs.water) {
+            prompt = `You can water ${profile.cactus.name}.`;
+        }
+        
+        if (needs.water && needs.comfort) {
+            prompt += " or ";
+        }
+        
+        if (needs.comfort) {
+            prompt +=  ` you can ${profile.cactus.blindState === 'closed' ?  'open' : 'close'} the blinds.`;
+        }
+        
+        if (needs.water && needs.comfort) {
+            prompt += " Which do you want?";
+        }
+    }
     //TODO: Ask Alison what to prompt after cactus wisdom for no needs.
-    needs.message = `${statusMessage} ${prompt}`;
 
-    return needs;
+    status.message = `${statusMessage} ${prompt}`;
+
+    return status;
 };
 
 const getRandomItemFromList = function(list) {
@@ -237,8 +260,28 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
     return cactus;
 };
 
+const getDeathNote = function(causeOfDeath) {
+    
+    let deathNote;
+
+    switch (causeOfDeath) {
+        case "dehydration":
+            deathNote = "Insert dehydration message here. ";
+            break;
+        case "drowning":
+            deathNote = "Insert drowning message here. ";
+            break;
+        // default cod is neglect
+        default:
+            deathNote = "Insert neglect message here. ";
+            break;
+    }
+    return deathNote;
+}
+
 module.exports = {
     getStatus,
     getNeeds,
-    computeStatus
+    computeStatus,
+    getDeathNote
 }
