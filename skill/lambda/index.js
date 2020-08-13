@@ -10,56 +10,33 @@ const cactusUtil = require('./src/cactusUtil');
 
 const moment = require('moment-timezone');
 
+const SOUND_FX = require('./src/soundFX');
 
 // BIG TODOS:
-// 0 rename cactusUtil to profileUtil
-// 0. refactor DEATH_NOTES into statusUtil.js
-// 0. Update the help intent to be more useful
+// 0  rename cactusUtil to profileUtil
+
 // 1. Address what to when the user says NO
-// 2. SSML additions 
-// 3. DEATH_NOTES - Split based upon cause of death
+// 2. Update the help intent to be more useful
+// 3. Update causeOfDeath notes to their actual strings
+
+// 4. SSML additions 
 
 // Bug Bash
 
-
-const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 //TODO change this URL to your publicly accessible HTTPS endpoint.
 const webAppBaseURL = "https://a85c00c18773.ngrok.io";
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
-const WATER_THRESHOLD = 20;
 
 const WATER_LEVEL_PER_LITER = 84;
-
-const FX_WATER = '<audio src="soundbank://soundlibrary/household/water/pour_water_01"/>';
-const FX_SLURP = '<audio src="soundbank://soundlibrary/human/amzn_sfx_drinking_slurp_01"/>';
-const FX_BOING = '<audio src="soundbank://soundlibrary/cartoon/amzn_sfx_boing_med_1x_02"/>';
-const FX_SHORT_CHIME = '<audio src="soundbank://soundlibrary/musical/amzn_sfx_bell_short_chime_02"/>';
-
-const FX_STARTUP_TONE = '<audio src="soundbank://soundlibrary/video_tunes/video_tunes_07"/>';
-const FX_DESTINATION_TONE = '<audio src="soundbank://soundlibrary/video_tunes/video_tunes_10"/>';
-const FX_DEATH_TONE = '<audio src="soundbank://soundlibrary/video_tunes/video_tunes_05"/>';
-
-const DEATH_NOTES = [
-    "is dead.",
-    "has passed away.",
-    "has met a sandy grave.",
-    "has croaked.",
-    "has expired.",
-    "has succumbed to neglect.",
-    "has kicked the bucket.",
-    "has gone to meet its maker. Whoever that was.",
-    "has departed for greener pastures. Or maybe it was sandier deserts. Anyway ...",
-    "has returned to the great cactus patch in the Amazon cloud."
-];
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
     },
     handle(handlerInput) {
-        let speakOutput = `${FX_STARTUP_TONE} Your shelf is empty, but don\'t despair. `; 
+        let speakOutput = `${SOUND_FX.STARTUP_TONE} Your shelf is empty, but don\'t despair. `; 
         speakOutput += 'I\'m here to pair you with the right prickly pear. ';
         speakOutput += 'Water, food, and light is what it needs. ';
         speakOutput += 'Treat your succulent well, and it\'ll reward your good deeds. ';
@@ -67,7 +44,6 @@ const LaunchRequestHandler = {
         speakOutput += 'To choose just the right cactus that needs your assistance, tell me ';
         speakOutput += 'If you could go anywhere in the world, where would you visit?';
         conditionallyLaunchWebApp(handlerInput);
-        
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -120,17 +96,13 @@ const HasCactusLaunchRequestHandler = {
         
         let speakOutput = status.message;
         
-        if ( profile.cactus.healthLevel <= 0 ) {
-            speakOutput = `${FX_DEATH_TONE} ${profile.cactus.name} ${getRandomItemFromList(DEATH_NOTES)} `;
-            speakOutput += "Want to start over with a new cactus?";
-            
+        if (!status.alive) {            
             profile = cactusUtil.cleanUpCactus(profile);
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);   
-            
         }
         
         conditionallyLaunchWebApp(handlerInput);
@@ -174,7 +146,7 @@ const CaptureDestinationHandler = {
         attributesManager.setPersistentAttributes(profile);
         attributesManager.savePersistentAttributes();
         
-        let speakOutput = `${FX_DESTINATION_TONE} I found the perfect cactus for you. `;
+        let speakOutput = `${SOUND_FX.DESTINATION_TONE} I found the perfect cactus for you. `;
         speakOutput += `Meet ${name}. `;
         speakOutput += 'They need water and sunlight to thrive. ';
         speakOutput += 'They\'re just a sprout right now, but keep them happy ';
@@ -221,25 +193,23 @@ const WaterCactusIntentHandler = {
         profile.cactus.waterLevel += WATER_INCREMENT;
         profile.lifeTime.waterUnits += WATER_INCREMENT;
         
-        let speakOutput = `${FX_WATER} ${FX_SLURP} Thanks. I'm feeling like a fish in water again.`;
-        
-        
+        let speakOutput = `${SOUND_FX.WATER} ${SOUND_FX.SLURP} Thanks. I'm feeling like a fish in water again.`;
+
+        const status = statusUtil.getStatus(profile);
+
         //TODO: talk with Alison about warning messages about over watering 
         //TODO: figure out max waterLevel based upon cactus size (no hardcoding to 20)
-        if (profile.cactus.waterLevel > WATER_THRESHOLD) {
+        if (!status.alive) {
           
-            speakOutput = `Oh no! You've overwatered ${profile.cactus.name}. ${FX_DEATH_TONE} ${profile.cactus.name} ${getRandomItemFromList(DEATH_NOTES)} `;
-            speakOutput += "Want to start over with a new cactus?";
+            speakOutput = status.message;
             
             profile = cactusUtil.cleanUpCactus(profile);
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
             attributesManager.savePersistentAttributes();
-            attributesManager.setSessionAttributes(profile);   
-            
+            attributesManager.setSessionAttributes(profile);               
             // TODO: investigate what to do about latestInteraction
-            
         }
         
         const attributesManager = handlerInput.attributesManager;
@@ -447,13 +417,13 @@ const HasCactusOpenBlindsIntentHandler = {
     },
     handle(handlerInput) {
         
-        let speakOutput = `${FX_BOING} But ... the blinds are already open.`;
+        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already open.`;
         
         const profile = getProfile(handlerInput);
         
         if (profile.cactus.blindState !== 'open') {
             
-            speakOutput = `${FX_SHORT_CHIME} I better get my sunglasses`;
+            speakOutput = `${SOUND_FX.SHORT_CHIME} I better get my sunglasses`;
             
             profile.cactus.blindState = "open";    
             
@@ -502,12 +472,12 @@ const HasCactusCloseBlindsIntentHandler = {
     },
     handle(handlerInput) {
         
-        let speakOutput = `${FX_BOING} But ... the blinds are already closed.`;
+        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already closed.`;
         
         const profile = getProfile(handlerInput);
         
         if (profile.cactus.blindState !== "closed") {
-            speakOutput = `${FX_SHORT_CHIME} Hey who turned out all the lights?`;
+            speakOutput = `${SOUND_FX.SHORT_CHIME} Hey who turned out all the lights?`;
         
             profile.cactus.blindState = "closed";
             
@@ -748,12 +718,6 @@ const createAdapter = function() {
         adapter = new localAdapter.localPersistenceAdapter({"path": "./profiles"})
     }
     return adapter;
-}
-
-// TODO: get rid this when you move death notes into the statusUtil.js
-const getRandomItemFromList = function(list) {
-    const randomIndex = Math.floor(Math.random() * list.length);
-    return list[randomIndex];
 }
 
 // The SkillBuilder acts as the entry point for your skill, routing all request and response
