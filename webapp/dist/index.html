@@ -6,13 +6,29 @@
     </head>
     <body>
         <style>
+            body {
+                padding: 0;
+                margin: 0 auto;
+            }
             .hud {
                 position: absolute;
                 text-align: center;
                 z-index: 100;
                 display:block;
             }
-            #info {
+            .scrollingBadge {
+                position: absolute;
+                height: 100vh;
+                overflow: scroll;
+                z-index: 110;
+            }
+            .badgeOverlay {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                display: none;
+            }
+            #info { 
                 width: 100%;
                 background-color: rgba(0,0,0,0.3); /* Black background with opacity */
                 top: 75%;
@@ -22,8 +38,12 @@
                 background-color: rgba(0,0,0,0.3); /* Black background with opacity */
                 top: 85%
             }
+            #badgeHud {
+                left: 10%;
+                top: 60%;
+            }
             .scrollable {
-                overflow-y:auto
+                overflow-y:auto;
             }
             .water {
                 right: 10%;
@@ -42,15 +62,34 @@
             }
         </style>
         <div id="container">
-            <canvas id="webGLCanvas"></canvas>            
-            <div class="hud" id="name">My Cactus</div>
-            <div class="hud water">
-                <progress id="waterBar" max="100"></progress>
-                <div>Water</div>
+            <div id="allBadges" class="hud badgeOverlay">
+                <div class="scrollingBadge">
+                    <img src="./assets/source-art/badges/Off/Pete_Badge-BackFromTheBrink.png" id="backFromTheBrink"/>
+                    <img src="./assets/source-art/badges/Off/Pete_Badge-EarlyBird.png" id="earlyBird"/>
+                    <img src="./assets/source-art/badges/Off/Pete_Badge-GreenThumb.png" id="greenThumb"/>
+                    <img src="./assets/source-art/badges/Off/Pete_Badge-HelicopterParent.png" id="helicopterParent"/>
+                    <img src="./assets/source-art/badges/Off/Pete_Badge-NewParent.png" id="newParent"/>
+                    <img src="./assets/source-art/badges/Off/Pete_Badge-NightOwl.png" id="nightOwl"/>
+                </div>
+                <img src="./assets/source-art/badges/Pete_Background-All.png" id="badgeBackground"/>
             </div>
-            <div class="health hud">
-                <progress id="healthBar" max="100"></progress>
-                <div>Health</div>
+            <div id="newBadge" class="hud badgeOverlay">
+                <img src="./assets/source-art/badges/Pete_Background-Badge.png" id="badgeBackground"/>
+            </div>
+            <canvas id="webGLCanvas"></canvas>
+            <div id="onScreenHud">
+                <div class="hud" id="badgeHud">
+                    <img src="./assets/source-art/badges/Pete_BadgeButton.png" id="badgeButton"/>
+                </div>
+                <div class="hud" id="name">My Cactus</div>
+                <div class="hud water">
+                    <progress id="waterBar" max="100"></progress>
+                    <div>Water</div>
+                </div>
+                <div class="health hud">
+                    <progress id="healthBar" max="100"></progress>
+                    <div>Health</div>
+                </div>
             </div>
             <div class="hud scrollable" id="info">General Info</div>
             <div class="hud scrollable" id="debugInfo">Debug</div>

@@ -2,6 +2,7 @@ const THREE = require('three');
 const GLTFLoader = require('three/examples/jsm/loaders/GLTFLoader');
 const selector = require('./selector');
 const screenShake = require('./screenShake');
+const badges = require('./badges');
 const OrbitControls = require('three/examples/jsm/controls/OrbitControls');
 const startInfo = require('./mockStartupData.json');
 
@@ -22,7 +23,9 @@ var debugElement = document.getElementById("debugInfo");
 var canvas = document.getElementById("webGLCanvas");
 var waterStatusBar = document.getElementById("waterBar"); 
 var healthSatusBar = document.getElementById("healthBar"); 
-var nameElement = document.getElementById("name"); 
+var nameElement = document.getElementById("name");
+var badgeElement = document.getElementById("badgeHud"); 
+
 infoElement.style.display = "none";
 
 if(debugLevel < 1) { // hide the debug element if no debugging.
@@ -60,11 +63,13 @@ try {
 
     //Start the process.
     render();
-    
+
     //Create a Spider after some time.
-    window.setTimeout(function() {
-        spider.spawnSpider();
-    }, SPIDER_TIMER);
+    if(assetsLoaded) {
+        window.setTimeout(function() {
+            spider.spawnSpider();
+        }, SPIDER_TIMER);
+    }
     
     console.log("post init");
 } catch(err) {
@@ -183,6 +188,12 @@ function setupAlexa() {
             console.error("Game state not found here is the payload: " + JSON.stringify(message));
         }
 
+        console.log("Game State: " + JSON.stringify(message.gameState));
+        if(message.gameState.newBadge) {
+            console.log("Showing new badge");
+            badges.showNewBadge(message.gameState.unlockedBadges.latestKey, message.gameState.unlockedBadges.latest);
+        }
+
         //If in intent exists and matches one of the below, play all local animations/sounds.
         if(message.playAnimation === true) {
             switch(message.intent) {
@@ -195,12 +206,13 @@ function setupAlexa() {
                 case "blindsUp":
                     blinds.raise();
                     break;
+                case "showBadges":
+                    badges.showBadges();
+                    break;
                 case "getStatus":
                 case "newCactus":
                     cactus.dance();
                     break;
-                case "checkBadges":
-                    //TODO
                 default:
                     return;
             }
@@ -290,6 +302,16 @@ function init() {
     document.addEventListener("touchstart", domTouch, true);
     document.addEventListener("mousedown", domClick, true);
 
+    badgeElement.onclick = function() {
+        if(alexa != null) {
+            alexa.skill.sendMessage({
+                intent:"ShowBadgesIntent",
+                clicked:"badgeButton"
+            });
+        }
+        badges.showBadges();
+    }
+
     //Load web Audio into the scene
     loadAudio();
 
@@ -351,6 +373,8 @@ function refreshGameState(dataPayload) {
     //initialize state of objects
     blinds.init(cactusState, debugLevel);
     cactus.init(cactusState, debugLevel);
+
+    badges.refreshBadges(dataPayload.unlockedBadges);
     
     // Adding the background texture.
     let bgTexture;
@@ -517,9 +541,9 @@ function onDocumentKeyDown(event) {
     } else if (keyCode == 90) { // z
         camera.position.z *= .5;
     } else if (keyCode == 38) { // Up arrow / fireTV remote up
-        age += 1;
+        0
     } else if (keyCode == 40) { // Down Arrow / fireTV remote down
-        age -= 1;
+        
     } //FireTV Codes: https://developer.amazon.com/docs/fire-tv/supporting-controllers-in-web-apps.html#usinginput
     else if(keyCode == 13) { // d-pad center
         // Perform a select
