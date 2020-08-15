@@ -1,9 +1,11 @@
 const THREE = require('three');
+const moment = require('moment-timezone');
 const GLTFLoader = require('three/examples/jsm/loaders/GLTFLoader');
+const OrbitControls = require('three/examples/jsm/controls/OrbitControls');
+
 const selector = require('./selector');
 const screenShake = require('./screenShake');
 const badges = require('./badges');
-const OrbitControls = require('three/examples/jsm/controls/OrbitControls');
 const startInfo = require('./mockStartupData.json');
 
 const blinds = require('./blinds.js');
@@ -160,6 +162,9 @@ function setupAlexa() {
         refreshGameState(message);
         //Start BG Music when we know it is an Alexa-enabled device.
         bgMusic.play();
+
+        const time =  moment(message.latestInteraction).tz(message.timeZone);
+        setupLights(time);
     });
     alexa.onReadyFailed((message) => {
         if(debugLevel >= 1) {
@@ -167,6 +172,8 @@ function setupAlexa() {
             infoElement.textContent = 'startup failed, Sorry, customer.';
         }
         alexa = null;
+        const time =  moment(startInfo.latestInteraction).tz(startInfo.timeZone);
+        setupLights(time);
     });
     alexa.speech.onStarted(() => {
         console.log('speech is playing');
@@ -327,7 +334,6 @@ function init() {
     });
     
     console.log(camera);
-    setupLights();
 }
 
 function loadAudio() {
@@ -373,6 +379,8 @@ function refreshGameState(dataPayload) {
     //initialize state of objects
     blinds.init(cactusState, debugLevel);
     cactus.init(cactusState, debugLevel);
+
+    //TODO add a refresh to the lighting for the sun
 
     badges.refreshBadges(dataPayload.unlockedBadges);
     
@@ -454,16 +462,39 @@ function setUpScene() {
     }
 }
 
-function setupLights() {
+/**
+ * returns a number from 0 - 2.5 for the strength of the directional light.
+ * 9pm-5am - no light - 0
+ * 11 2.5-2.5/8*2
+ * 12 2.5-2.5/8
+ * 1pm strongest light -2.5 
+ * (13)
+ * @param {moment js time instance of now} momentTime 
+ */
+function calculateSunStrength(momentTime) {
+    const MAX_STRENGTH = 2.5;
+    var lightStrength = 0;
+    const hour = momentTime.hour();
+    console.log(`hour: ${hour}`);
+    if(hour < 5 || hour > 21) {
+        return 0
+    }
+    return MAX_STRENGTH - Math.abs(13 - hour)/8 * MAX_STRENGTH;
+}
+
+//TODO fix the echo show https://github.com/mrdoob/three.js/pull/18678
+function setupLights(momentTime) {
 
     //Set up Lighting
-    var light = new THREE.AmbientLight(0x404040, 8); // soft white light
+    var light = new THREE.AmbientLight(0x404040, 1.5); // soft white light
     scene.add(light);
 
-    // var sun = new THREE.DirectionalLight(0xFDB813, 2);
-    // sun.position.set(-3, 1, -6);
-    // sun.castShadow = false;
-    // scene.add(sun);
+    console.log(calculateSunStrength(momentTime));
+
+    var sun = new THREE.DirectionalLight(0xFDB813, calculateSunStrength(momentTime));
+    sun.position.set(-3, 1, -6);
+    sun.castShadow = false;
+    scene.add(sun);
     // Add a dot representing where the "sun" is
     // var dotGeometry = new THREE.Geometry();
     // dotGeometry.vertices.push(new THREE.Vector3(-3,1,-6));
@@ -471,17 +502,14 @@ function setupLights() {
     // var dot = new THREE.Points(dotGeometry, dotMaterial);
     // scene.add(dot);
 
-    // var overheadLight = new THREE.DirectionalLight(0x404040, 8);
-    // scene.add(overheadLight);
+    var overheadLight = new THREE.DirectionalLight(0x404040, 5);
+    scene.add(overheadLight);
 
-    // hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.3 );
-    // hemiLight.color.setHSL( 0.7, 1, 0.7 );
-    // hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
-    // hemiLight.position.set( 0, 15, 0 );
-    // scene.add(hemiLight);
-
-    // hemiLightHelper = new THREE.HemisphereLightHelper( hemiLight, 10 );
-    // scene.add(hemiLightHelper);
+    hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.3 );
+    hemiLight.color.setHSL( 0.7, 1, 0.7 );
+    hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+    hemiLight.position.set( 0, 15, 0 );
+    scene.add(hemiLight);
 }
 
 function createMaterialFromFilename(fileName) {
