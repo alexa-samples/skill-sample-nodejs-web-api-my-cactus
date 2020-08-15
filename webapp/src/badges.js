@@ -106,13 +106,17 @@ module.exports = {
         canvas.style.display = "none";
         this.hideStatus();
 
-        window.setTimeout(this.hideBadges, 10000);
+        window.setTimeout(() => {
+            this.showStatus();
+            this.hideBadges();
+        }, 10000);
     },
     hideBadges() {
+        this.showStatus();
         fullScreenBadgeOverlay.style.display = "none";
         fullScreenNewBadgeOverlay.style.display = "none";
         canvas.style.display = "inline";
-        this.showStatus();
+        
     },
     updateBadge(badgeReference, value) {
         if(value) {
