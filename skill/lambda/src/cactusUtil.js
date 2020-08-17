@@ -20,6 +20,8 @@ const defaultCactus = function(timeZone) {
     return {
         waterLevel: 5, //TODO: thinking about randomly generating this with a threshold
         healthLevel: 100,
+        waterMax: 20,
+        happiness: 1,
         dayOfBirth: moment.now(), //TODO: rename to dateOfBirth
         daysAlive: 0,
         blindState: `${isItDaylight(moment.now(), timeZone) ? 'closed' : 'open'}`,

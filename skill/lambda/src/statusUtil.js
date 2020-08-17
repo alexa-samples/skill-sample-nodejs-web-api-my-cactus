@@ -62,7 +62,7 @@ const WISDOM_MESSAGES = [
     "Today I wondered what it might be like to ride a bike. I decided that would be a thorny proposition.",
     //TODO: Replace with actual sound effect
     "Today I ate a fly. I don't think it agreed with my stomach. <sound FX>",
-    "The cat taught me this today. It means ‘I love you'” <purr sound FX>",
+    "The cat taught me this today. It means 'I love you' <purr sound FX>",
     "The dog taught me this today. It means go away or I'll eat you. <dog bark FX> ",
     "The dog taught me this today. It means I'm hungry. <dog bark FX> ",
     "When I have a thorny day, I find my happy place. Today my happy place is ... <place sound FX>",
