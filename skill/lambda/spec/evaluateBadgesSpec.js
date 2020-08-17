@@ -3,7 +3,7 @@ const badgeUtil = require("../src/badgeUtil");
 const moment = require("moment-timezone");
 
 describe('evaluteBadges - timesChecked', function() {
-    const profile = require('../spec/profiles/ss-helicopter-parent.json');
+    const profile = require('../spec/profiles/helicopter-parent.json');
 
     it('should unlock the helicopter parent badge', function() {
         const testMoment = moment.tz("2020-07-16 19:00:00", profile.timeZone);
@@ -16,7 +16,7 @@ describe('evaluteBadges - timesChecked', function() {
 
 
 describe('evaluateBadges', function() {
-    let profile =  require('../spec/profiles/ss-night-time-blind-open.json');
+    let profile =  require('../spec/profiles/night-time-blind-open.json');
 
     beforeEach(function() {
         profile.unlockedBadges.unlockHistory = [];

@@ -6,14 +6,14 @@ const moment = require('moment-timezone');
 describe('computeStatus', function() {
     // elapsed time less than one hour
     it('should not modify lastUpdated', function() {
-        const ssOneHourLess = require("./profiles/ss-one-hour-less.json");
+        const ssOneHourLess = require("./profiles/one-hour-less.json");
         const latestInteraction = moment(ssOneHourLess.cactus.latestInteraction);
 
         const status = statusUtil.computeStatus(ssOneHourLess, latestInteraction, ssOneHourLess.timeZone);
         expect(status.lastUpdated).toBe(1588890484157);
     });
     
-    const ssOneHourGreater = require("./profiles/ss-one-hour-greater.json");
+    const ssOneHourGreater = require("./profiles/one-hour-greater.json");
     const OneHourGreaterLatestInteraction = moment(ssOneHourGreater.cactus.latestInteraction);
     const status = statusUtil.computeStatus(ssOneHourGreater, OneHourGreaterLatestInteraction, ssOneHourGreater.timeZone);
 
@@ -30,7 +30,7 @@ describe('computeStatus', function() {
     });
 
     it('healthLevel should be 40', function() {
-        const ssOneHourGreaterNoWater49Hp =  require('./profiles/ss-one-hour-greater-no-water-50-health.json');
+        const ssOneHourGreaterNoWater49Hp =  require('./profiles/one-hour-greater-no-water-50-health.json');
         const latestInteraction = moment(ssOneHourGreaterNoWater49Hp.cactus.latestInteraction);
         // console.log('running test - ','epoch', ssOneHourGreaterNoWater49Hp.cactus.latestInteraction, 'moment', latestInteraction);
         const status2 = statusUtil.computeStatus(ssOneHourGreaterNoWater49Hp, latestInteraction, ssOneHourGreaterNoWater49Hp.timeZone);
@@ -39,17 +39,17 @@ describe('computeStatus', function() {
 
     
     it('healthLevel should be less than 0', function() {
-        const ssNightTimeBlindsOpen = require('./profiles/ss-night-time-blind-open.json');
+        const ssNightTimeBlindsOpen = require('./profiles/night-time-blind-open.json');
         const nightTimeBlindOpenLatestInteraction =  moment(ssNightTimeBlindsOpen.cactus.latestInteraction);
         const status3 = statusUtil.computeStatus(ssNightTimeBlindsOpen, nightTimeBlindOpenLatestInteraction, ssNightTimeBlindsOpen.timeZone);        
         expect(status3.healthLevel).toBeLessThan(0);
     });
 
     it('should determine the cactus is dead', function() {
-        const deadProfile = require('./profiles/ss-negative-water-postive-health.json');
+        const deadProfile = require('./profiles/negative-water-postive-health.json');
         
         // TODO: consider adding a distinct test case for this file/profile.
-        // const deadProfile = require('./profiles/ss-prod-profile.json');
+        // const deadProfile = require('./profiles/prod-profile.json');
 
         const latestInteraction = moment();
 

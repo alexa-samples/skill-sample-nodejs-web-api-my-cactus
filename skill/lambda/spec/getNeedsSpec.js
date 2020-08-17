@@ -4,7 +4,7 @@ const statusUtil = require('../src/statusUtil');
 
 describe('getNeeds', function() {
 
-    const ssOneHourGreaterNoWater49Hp = require("./profiles/ss-one-hour-greater-no-water-50-health.json");
+    const ssOneHourGreaterNoWater49Hp = require("./profiles/one-hour-greater-no-water-50-health.json");
     const status = statusUtil.getNeeds(ssOneHourGreaterNoWater49Hp);  
 
     it('should need water and light', function(){
@@ -17,7 +17,7 @@ describe('getNeeds', function() {
     //     expect(status).toBe('Sharpie Sharp is out of water and needs light.');
     // });
 
-    // const ssNightTimeBlindsOpen = require('./profiles/ss-night-time-blind-open.json');
+    // const ssNightTimeBlindsOpen = require('./profiles/night-time-blind-open.json');
     // const status2 = computeStatus(ssNightTimeBlindsOpen);
 
     // it('should ', function() {

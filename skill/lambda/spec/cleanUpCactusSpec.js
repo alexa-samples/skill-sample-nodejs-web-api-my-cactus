@@ -4,7 +4,7 @@ const moment = require('moment-timezone');
 describe('cleanUpCactus', function() {
     it('should reset the cactus and badges.', function() {
 
-        const profile = require('../spec/profiles/ss-dead-launch.json');
+        const profile = require('../spec/profiles/dead-launch.json');
 
         const result = cactusUtil.cleanUpCactus(profile);
 
