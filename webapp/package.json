@@ -13,6 +13,8 @@
   "author": "joemocode",
   "license": "ISC",
   "dependencies": {
+    "moment": "^2.27.0",
+    "moment-timezone": "^0.5.31",
     "three": "^0.115.0"
   },
   "devDependencies": {

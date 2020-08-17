@@ -101,7 +101,7 @@ module.exports = {
  * @param {*} maxScale minimum of the original model size to scale to.
  * @param {*} minScale Maximum of original model size to scale from.
  */
-function setObjScaleAndPosition(object, age, maxAge, minAge=0, startPosX=0, startPosY=0, endPosX=0, endPosY=0, maxScale=1, minScale=.25) {
+function setObjScaleAndPosition(object, age, maxAge, minAge=0, startPosX=0, startPosY=0, endPosX=0, endPosY=0, maxScale=1, minScale=.5) {
     const normalizedAge = getNormalizedAge(age, maxAge, minAge);
     const diffPosX = endPosX - startPosX;
     const diffPosY = endPosY - startPosY;

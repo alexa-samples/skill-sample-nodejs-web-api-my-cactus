@@ -92,15 +92,12 @@
                     "samples": []
                 },
                 {
-                    "name": "CheckBadgesIntent",
+                    "name": "ShowBadgesIntent",
                     "slots": [],
                     "samples": [
-                        "what have I unlocked",
-                        "what are my trophies",
-                        "what are my achievements",
-                        "we don't need no stinking badges",
                         "badges",
-                        "what are my badges"
+                        "trophies",
+                        "achievements"
                     ]
                 }
             ],

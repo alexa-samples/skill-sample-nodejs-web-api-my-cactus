@@ -19,12 +19,12 @@ const moment = require('moment-timezone');
 
 const persistenceAdapter = require('ask-sdk-s3-persistence-adapter');
 //TODO change this URL to your publicly accessible HTTPS endpoint.
-const webAppBaseURL = "https://a85c00c18773.ngrok.io";
+const webAppBaseURL = "https://502df56c596e.ngrok.io";
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
 const WATER_THRESHOLD = 20;
-const HELICOPTER_THRESHOLD = 5;
+const HELICOPTER_THRESHOLD = 2;
 
 const WATER_LEVEL_PER_LITER = 84;
 
@@ -411,12 +411,12 @@ function getMessageIntent(requestEnvelope) {
 
 // TODO: come up with a "database" of badge and their metadata
 // create an unlock table that tracks when a badge was unlocked for a user
-const CheckBadgesIntentHandler = {
+const ShowBadgesIntentHandler = {
     canHandle(handlerInput) {
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CheckBadgesIntent') || 
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'ShowBadgesIntent') || 
             (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
-            && getMessageIntent(handlerInput.requestEnvelope) === 'CheckBadgesIntent');
+            && getMessageIntent(handlerInput.requestEnvelope) === 'ShowBadgesIntent');
     },
     handle(handlerInput) {
         const profile = getProfile(handlerInput);
@@ -430,15 +430,14 @@ const CheckBadgesIntentHandler = {
 
         speakOutput += "What would you like to do?";
         
-        if(supportsHTMLInterface(handlerInput)) {
-            handlerInput.responseBuilder.addDirective({
-                "type":"Alexa.Presentation.HTML.HandleMessage",
-                "message": {
-                    "intent":"checkBadges",// only play animation when it is a voice request.
-                    "gameState": profile
-                }
-            });
-        }
+        handlerInput.responseBuilder.addDirective({
+            "type":"Alexa.Presentation.HTML.HandleMessage",
+            "message": {
+                "intent":"showBadges",
+                "playAnimation": true,
+                "gameState": getProfile(handlerInput)
+            }
+        });
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -606,6 +605,7 @@ const FallbackMessageRequestHandler = {
             .getResponse();
     }
 }
+
 
 const HelpIntentHandler = {
     canHandle(handlerInput) {
@@ -856,6 +856,7 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
 const evaluateBadges = function(profile, currentTime) {
 
     const unlockedBadges = profile.unlockedBadges;
+    profile.newBadge = false;// Currently one turn behind since this is run in the request interceptor.
 
     const waterUnits = profile.lifeTime.waterUnits;
     const waterThreshold = Math.pow(2, unlockedBadges.waterUnits.length) * 100;    
@@ -863,19 +864,25 @@ const evaluateBadges = function(profile, currentTime) {
     if(waterUnits > 99 && waterUnits >= waterThreshold) {
         // update the badges
         unlockedBadges.waterUnits.push(waterUnits);
-
         profile.unlockedBadges.latest = `Lifetime water units for giving your cactus over ${waterThreshold} units of water.`;
     }
 
     // early bird badge rules check
     if(currentTime.hour() >= 4 && currentTime.hour() <= 7) {
+        if(!unlockedBadges.earlyBird) {
+            profile.unlockedBadges.latestKey = "earlyBird";
+            profile.newBadge = true;
+        }
         unlockedBadges.earlyBird = true;
         unlockedBadges.latest = 'The early badge for checking your cactus between the hours of 4 to 7 am.';
     }
 
     // night owl badge rules check
-    if(currentTime.hour() == 0 
-        && (currentTime.hour() <= 3 && currentTime.minutes()) <= 59 ) {
+    if(currentTime.hour() == 0 && (currentTime.hour() <= 3 && currentTime.minutes()) <= 59 ) {
+        if(!unlockedBadges.nightOwl) {
+            profile.unlockedBadges.latestKey = "nightOwl";
+            profile.newBadge = true;
+        }
         unlockedBadges.nightOwl = true;
         unlockedBadges.latest = 'The night owl badge for check your cactus from midnight to 3 am.';
     }
@@ -907,10 +914,13 @@ const evaluateBadges = function(profile, currentTime) {
     });
 
     //helicopter parent
-    if (!unlockedBadges.helicopterParent 
-            && profile.timesChecked >= HELICOPTER_THRESHOLD) {
+    if (!unlockedBadges.helicopterParent && profile.timesChecked >= HELICOPTER_THRESHOLD) {
+        if(!unlockedBadges.helicopterParent) {
+            profile.unlockedBadges.latestKey = "helicopterParent";
+            profile.newBadge = true;
+        }
         unlockedBadges.helicopterParent = true;
-        unlockedBadges.latest = 'For hovering over your cactus like a helicopter parent by checking on your cactus 5 times in one day.';
+        unlockedBadges.latest = `For hovering over your cactus like a helicopter parent by checking on your cactus ${HELICOPTER_THRESHOLD} times in one day.`
     }
 
     return unlockedBadges
@@ -942,7 +952,7 @@ const ErrorHandler = {
     },
     handle(handlerInput, error) {
         console.log(`~~~~ Error handled: ${error.stack}`);
-        const speakOutput = `<amazon:emotion name="disappointed" intensity="high">Joe you broke the merge.</amazon:emotion>`;
+        const speakOutput = `<amazon:emotion name="disappointed" intensity="high">Justin you broke the code.</amazon:emotion>`;
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -997,7 +1007,7 @@ const loadProfileInterceptor = {
             console.log('initializing profile', profile);
         } else {
             profile.cactus = computeStatus(profile, moment(), timeZone);
-            evaluateBadges(profile, moment())
+            evaluateBadges(profile, moment());
         }
         
         profile.timeZone = timeZone;
@@ -1126,7 +1136,7 @@ const getRandomItemFromList = function(list) {
 // defined are included below. The order matters - they're processed top to bottom.
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
-        CheckBadgesIntentHandler,
+        ShowBadgesIntentHandler,
         HasCactusYesIntentHandler,
         YesIntentHandler,
         DeadCactusNoIntentHandler,

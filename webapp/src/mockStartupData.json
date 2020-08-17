@@ -1,34 +1,38 @@
 {
   "cactus": {
-    "blindState": "open",
-    "dayOfBirth": 1591991073722,
-    "daysAlive": 13,
-    "healthLevel": 50,
-    "waterMax": 20,
-    "lastUpdated": 1593540469788,
-    "latestInteraction": 1591991073722,
-    "name": "Choosing Cactus...",
-    "waterLevel": 10
+      "waterLevel": 15,
+      "healthLevel": 100,
+      "waterMax": 20,
+      "dayOfBirth": 1597366157371,
+      "daysAlive": 0,
+      "blindState": "open",
+      "lastUpdated": 1597366157372,
+      "happiness": 1,
+      "name": "Palmer"
   },
-  "latestInteraction": 1593540554954,
   "lifeTime": {
-    "waterUnits": 35
+      "waterUnits": 10
   },
-  "timeZone": "America/Los_Angeles",
-  "timesChecked": 1,
   "unlockedBadges": {
-    "durations": {
-      "1": true,
-      "14": true,
-      "180": false,
-      "3": true,
-      "30": false,
-      "365": false,
-      "7": true,
-      "90": false
-    },
-    "earlyBird": false,
-    "nightOwl": false,
-    "waterUnits": []
-  }
+      "latest": "",
+      "waterUnits": [],
+      "earlyBird": false,
+      "nightOwl": false,
+      "durations": {
+          "1": false,
+          "3": false,
+          "7": false,
+          "14": false,
+          "30": false,
+          "90": false,
+          "180": false,
+          "365": false
+      },
+      "helicopterParent": true,
+      "latestKey": "helicopterParent"
+  },
+  "timesChecked": 1,
+  "latestInteraction": 1597355118000,
+  "timeZone": "America/Los_Angeles",
+  "newBadge": false
 }
