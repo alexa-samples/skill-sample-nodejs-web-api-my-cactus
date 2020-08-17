@@ -6,7 +6,7 @@ const OrbitControls = require('three/examples/jsm/controls/OrbitControls');
 const selector = require('./selector');
 const screenShake = require('./screenShake');
 const badges = require('./badges');
-const startInfo = require('./mockStartupData.json');
+const mockData = require('./mockStartupData.json');
 
 const blinds = require('./blinds.js');
 const cactus = require('./cactus.js');
@@ -38,7 +38,7 @@ if(debugLevel < 1) { // hide the debug element if no debugging.
 var camera, scene, renderer, clock; // set in init()
 
 var hemiLight; // TODO follow up on lighting. 
-var alexa; // Also set in init
+var alexaClient; // Also set in init
 var assetsLoaded = false; //waits that the 3D assets have loaded
 var alexaLoaded = false; //waits that the Alexa module exists
 var countGlbs = 0;
@@ -134,7 +134,7 @@ function update() {
 function cloudLog(payload) {
     console.log(payload);
     if(alexaLoaded) {
-        alexa.skill.sendMessage({
+        alexaClient.skill.sendMessage({
             intent: "log",
             log: payload
         });
@@ -145,98 +145,110 @@ function cloudLog(payload) {
  * Sets up the Alexa object and listeners.
  */
 function setupAlexa() {
-    alexa = new Alexa({ version: "0.2" });
-    alexa.onReady((message) => {
-        alexaLoaded = true;
-        
-        console.log("Startup Alexa success. Logging device and memory info");
-        if(debugLevel >= 1) {
-            alexa.performance.getMemoryInfo().then((memInfo) => cloudLog({
-                display: JSON.stringify(alexa.capabilities.display),
-                memory: JSON.stringify(memInfo),
-                microphone: JSON.stringify(alexa.capabilities.microphone)
-            }));
-            debugElement.textContent = 'startup succeeded, time to start my game';
-            infoElement.textContent = JSON.stringify(message);
-        }
-        refreshGameState(message);
-        //Start BG Music when we know it is an Alexa-enabled device.
-        bgMusic.play();
+    Alexa.create({version: '1.0'})
+        .then((args) => {
+            const {
+                alexa,
+                message
+            } = args;
+            alexaClient = alexa;
+            alexaLoaded = true;
+            console.log(JSON.stringify("args: " + JSON.stringify(args)));
 
-        const time =  moment(message.latestInteraction).tz(message.timeZone);
-        setupLights(time);
-    });
-    alexa.onReadyFailed((message) => {
-        if(debugLevel >= 1) {
-            debugElement.textContent =  'startup failed, better message customer';
-            infoElement.textContent = 'startup failed, Sorry, customer.';
-        }
-        alexa = null;
-        const time =  moment(startInfo.latestInteraction).tz(startInfo.timeZone);
-        setupLights(time);
-    });
-    alexa.speech.onStarted(() => {
-        console.log('speech is playing');
-        duckAudio();
-    });
-    alexa.speech.onStopped(() => {
-        console.log('speech stopped playing');
-        restoreAudio();
-    });
-    // Called every time a data payload comes from backend as a message Directive.
-    alexa.skill.onMessage((message) => {
-        if(message) {
-            debugElement.textContent = JSON.stringify(message);
-        }
+            console.log(JSON.stringify(message));
 
-        if(message.gameState) {
-            refreshGameState(message.gameState);
-        } else {
-            console.error("Game state not found here is the payload: " + JSON.stringify(message));
-        }
-
-        console.log("Game State: " + JSON.stringify(message.gameState));
-        if(message.gameState.newBadge) {
-            console.log("Showing new badge");
-            badges.showNewBadge(message.gameState.unlockedBadges.latestKey, message.gameState.unlockedBadges.latest);
-        }
-
-        //If in intent exists and matches one of the below, play all local animations/sounds.
-        if(message.playAnimation === true) {
-            switch(message.intent) {
-                case "water":
-                    pail.water();
-                    break;
-                case "blindsDown"://todo test this and blinds up
-                    blinds.lower();
-                    break;
-                case "blindsUp":
-                    blinds.raise();
-                    break;
-                case "showBadges":
-                    badges.showBadges();
-                    break;
-                case "getStatus":
-                case "newCactus":
-                    cactus.dance();
-                    break;
-                default:
-                    return;
+            console.log("Startup Alexa success. Logging device and memory info");
+            if(debugLevel >= 1) {
+                alexaClient.performance.getMemoryInfo().then((memInfo) => cloudLog({
+                    display: JSON.stringify(alexaClient.capabilities.display),
+                    memory: JSON.stringify(memInfo),
+                    microphone: JSON.stringify(alexaClient.capabilities.microphone)
+                }));
+                debugElement.textContent = 'startup succeeded, time to start my game';
+                infoElement.textContent = JSON.stringify(message);
             }
-        }
-    });
-    //TODO add screen dimming.
-    alexa.voice.onMicrophoneOpened(() => {
-        // dimScreen();
-        duckAudio();
-        console.log("microphone opened");
-    });
-    alexa.voice.onMicrophoneClosed(() => {
-        // undimScreen();
-        restoreAudio();
-        console.log("microphone closed");
-    });
+            refreshGameState(message);
+            //Start BG Music when we know it is an Alexa-enabled device.
+            bgMusic.play();
+            const time =  moment(message.latestInteraction).tz(message.timeZone);
+            setupLights(time);
 
+            alexaClient.speech.onStarted(() => {
+                console.log('speech is playing');
+                duckAudio();
+            });
+            alexaClient.speech.onStopped(() => {
+                console.log('speech stopped playing');
+                restoreAudio();
+            });
+            // Called every time a data payload comes from backend as a message Directive.
+            alexaClient.skill.onMessage((message) => {
+                if(message) {
+                    debugElement.textContent = JSON.stringify(message);
+                    console.log("Got a message for you: " + JSON.stringify(message));
+                }
+        
+                if(message.gameState) {
+                    refreshGameState(message.gameState);
+                } else {
+                    console.error("Game state not found here is the payload: " + JSON.stringify(message));
+                }
+        
+                console.log("Game State: " + JSON.stringify(message.gameState));
+                if(message.gameState.newBadge) {
+                    console.log("Showing new badge");
+                    badges.showNewBadge(message.gameState.unlockedBadges.latestKey, message.gameState.unlockedBadges.latest);
+                }
+        
+                //If in intent exists and matches one of the below, play all local animations/sounds.
+                if(message.playAnimation === true) {
+                    switch(message.intent) {
+                        case "water":
+                            pail.water();
+                            break;
+                        case "blindsDown"://todo test this and blinds up
+                            blinds.lower();
+                            break;
+                        case "blindsUp":
+                            blinds.raise();
+                            break;
+                        case "showBadges":
+                            badges.showBadges();
+                            break;
+                        case "getStatus":
+                        case "newCactus":
+                            cactus.dance();
+                            break;
+                        default:
+                            return;
+                    }
+                }
+            });
+            //TODO add screen dimming.
+            alexaClient.voice.onMicrophoneOpened(() => {
+                // dimScreen();
+                duckAudio();
+                console.log("microphone opened");
+            });
+            alexaClient.voice.onMicrophoneClosed(() => {
+                // undimScreen();
+                restoreAudio();
+                console.log("microphone closed");
+            });
+        })
+        .catch(error => {
+            console.log(JSON.stringify(error));
+            if(debugLevel >= 1) {
+                debugElement.textContent =  'startup failed, better message customer';
+                infoElement.textContent = 'startup failed, Sorry, customer.';
+            }
+            alexa = null;
+            const time =  moment(mockData.latestInteraction).tz(mockData.timeZone);
+            refreshGameState(mockData);
+            //Start BG Music when we know it is an Alexa-enabled device.
+            bgMusic.play();
+            setupLights(time);
+        });
 }
 
 function dimScreen() {
@@ -311,7 +323,7 @@ function init() {
 
     badgeElement.onclick = function() {
         if(alexa != null) {
-            alexa.skill.sendMessage({
+            alexaClient.skill.sendMessage({
                 intent:"ShowBadgesIntent",
                 clicked:"badgeButton"
             });
@@ -368,7 +380,7 @@ function loadBackgroundMusic(listener) {
 function refreshGameState(dataPayload) {
     cactusState = dataPayload.cactus;
     if(debugLevel >= 1) {
-        console.log(cactusState.waterLevel);
+        console.log("Water level: " + cactusState.waterLevel);
     }
     //initialize state of visible DOM elements not controlled by a class.
     nameElement.textContent = cactusState.name;
@@ -455,11 +467,6 @@ function setUpScene() {
 
     camera.position.set(12.49529444321625, 453.77789466125455, 652.0444919524163); // set the proper position of the camera
     controls.update();
-
-    //Set up initial Game values. Acts on the assets. DO not call if Alexa was loaded as we will clobber it with mock data.
-    if(!alexaLoaded) {
-        refreshGameState(startInfo);
-    }
 }
 
 /**
