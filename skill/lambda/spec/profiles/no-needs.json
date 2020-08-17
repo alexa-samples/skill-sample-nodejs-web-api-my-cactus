@@ -1,0 +1,34 @@
+{
+    "cactus": {
+      "waterLevel": 5,
+      "healthLevel": 100,
+      "dayOfBirth": 1595974111113,
+      "daysAlive": 0,
+      "blindState": "open",
+      "lastUpdated": 1595974111113,
+      "name": "Sharpie Sharp"
+    },
+    "lifeTime": {
+      "waterUnits": 10
+    },
+    "unlockedBadges": {
+      "waterUnits": [],
+      "earlyBird": false,
+      "nightOwl": false,
+      "durations": {
+        "1": false,
+        "3": false,
+        "7": false,
+        "14": false,
+        "30": false,
+        "90": false,
+        "180": false,
+        "365": false
+      },
+      "helicopterParent": false,
+      "lostAllBadges": true
+    },
+    "timesChecked": 3,
+    "latestInteraction": 1595974912371,
+    "timeZone": "America/New_York"
+  }

@@ -1,0 +1,33 @@
+{
+    "cactus": {
+      "waterLevel": -10,
+      "healthLevel": 100,
+      "dayOfBirth": 1593639792000,
+      "daysAlive": 0,
+      "blindState": "open",
+      "lastUpdated": 1593639792000,
+      "name": "Rufus"
+    },
+    "lifeTime": {
+      "waterUnits": 0
+    },
+    "unlockedBadges": {
+      "waterUnits": [],
+      "earlyBird": true,
+      "nightOwl": false,
+      "durations": {
+        "1": false,
+        "3": false,
+        "7": false,
+        "14": false,
+        "30": false,
+        "90": false,
+        "180": false,
+        "365": false
+      },
+      "helicopterParent": false
+    },
+    "timesChecked": 1,
+    "latestInteraction": 1595482820471,
+    "timeZone": "America/New_York"
+  }
