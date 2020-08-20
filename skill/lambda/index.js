@@ -24,12 +24,14 @@ const SOUND_FX = require('./src/soundFX');
 // Bug Bash
 
 //TODO change this URL to your publicly accessible HTTPS endpoint.
-const webAppBaseURL = "https://1ebe25a64067.ngrok.io";
+const webAppBaseURL = "https://a2989d0d6cdc.ngrok.io";
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
 
 const WATER_LEVEL_PER_LITER = 84;
+
+const FALLBACK_REPROMPT = "What would you like to do?";
 
 const LaunchRequestHandler = {
     canHandle(handlerInput) {
@@ -42,12 +44,13 @@ const LaunchRequestHandler = {
         speakOutput += 'Treat your succulent well, and it\'ll reward your good deeds. ';
         
         speakOutput += 'To choose just the right cactus that needs your assistance, tell me ';
-        speakOutput += 'If you could go anywhere in the world, where would you visit?';
+        const reprompt = 'If you could go anywhere in the world, where would you visit?';
+        speakOutput += reprompt;
         conditionallyLaunchWebApp(handlerInput);
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            .reprompt(speakOutput)
+            .reprompt(reprompt)
             .getResponse();
     }
 };
@@ -94,8 +97,6 @@ const HasCactusLaunchRequestHandler = {
         
         const status = statusUtil.getStatus(profile);
         
-        let speakOutput = status.message;
-        
         if (!status.alive) {            
             profile = cactusUtil.cleanUpCactus(profile);
             
@@ -108,8 +109,8 @@ const HasCactusLaunchRequestHandler = {
         conditionallyLaunchWebApp(handlerInput);
         
         return handlerInput.responseBuilder
-            .speak(speakOutput)
-            .reprompt(speakOutput)
+            .speak(status.message)
+            .reprompt(status.reprompt)
             .getResponse();
     }
 };
@@ -122,7 +123,7 @@ const hasCactusCaptureDestinationHandler = {
     },
     handle(handlerInput){
         return handlerInput.responseBuilder
-            .speak('We already have a cactus')
+            .speak('We already have a cactus')//TODO, do we need a reprompt?
             .getResponse();
     }
 }
@@ -200,9 +201,6 @@ const WaterCactusIntentHandler = {
         //TODO: talk with Alison about warning messages about over watering 
         //TODO: figure out max waterLevel based upon cactus size (no hardcoding to 20)
         if (!status.alive) {
-          
-            speakOutput = status.message;
-            
             profile = cactusUtil.cleanUpCactus(profile);
             
             const attributesManager = handlerInput.attributesManager;
@@ -229,8 +227,8 @@ const WaterCactusIntentHandler = {
         }
 
         return handlerInput.responseBuilder
-            .speak(speakOutput)
-            .reprompt(speakOutput)
+            .speak(status.message)
+            .reprompt(status.reprompt)
             .getResponse();
     }
 }
@@ -290,6 +288,8 @@ const HasCactusNoIntentHandler = {
 };
 
 
+
+
 /**
  * Simple handler for logging messages sent from the webapp
  */
@@ -335,7 +335,8 @@ const ShowBadgesIntentHandler = {
             speakOutput = `Your last unlocked badge is ${latest} `;
         }
 
-        speakOutput += "What would you like to do?";
+        const prompt = "What would you like to do?";
+        speakOutput += prompt;
         
         handlerInput.responseBuilder.addDirective({
             "type":"Alexa.Presentation.HTML.HandleMessage",
@@ -348,7 +349,7 @@ const ShowBadgesIntentHandler = {
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            .reprompt(speakOutput)
+            .reprompt(prompt)
             .getResponse();
     }
 };
@@ -370,8 +371,6 @@ const GetStatusIntentHandler = {
         
         console.log('GetStatusIntentHandler', status);
         
-        const speakOutput = status.message;
-        
         if(supportsHTMLInterface(handlerInput)) {
             handlerInput.responseBuilder.addDirective({
                 "type":"Alexa.Presentation.HTML.HandleMessage",
@@ -384,8 +383,8 @@ const GetStatusIntentHandler = {
         }
         
         return handlerInput.responseBuilder
-            .speak(speakOutput)
-            .reprompt(speakOutput)
+            .speak(status.message)
+            .reprompt(status.reprompt)
             .getResponse();
     }
 };
@@ -446,7 +445,7 @@ const HasCactusOpenBlindsIntentHandler = {
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            .reprompt(speakOutput)
+            .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
 }
@@ -499,7 +498,7 @@ const HasCactusCloseBlindsIntentHandler = {
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            .reprompt(speakOutput)
+            .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
 }
@@ -522,11 +521,11 @@ const HelpIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent';
     },
     handle(handlerInput) {
-        const speakOutput = 'Help Intent';
+        const speakOutput = 'Help Intent'; // TODO make this better.
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            .reprompt(speakOutput)
+            .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
 };
@@ -543,6 +542,21 @@ const CancelAndStopIntentHandler = {
             .getResponse();
     }
 };
+
+const FallbackIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.FallbackIntent';
+    },
+    handle(handlerInput) {
+        const speakOutput = `${SOUND_FX.ERROR} I'm not sure about that. ${FALLBACK_REPROMPT}`;
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(FALLBACK_REPROMPT)
+            .getResponse();
+    }
+};
+
 const SessionEndedRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'SessionEndedRequest';
@@ -581,7 +595,7 @@ const ErrorHandler = {
     },
     handle(handlerInput, error) {
         console.log(`~~~~ Error handled: ${error.stack}`);
-        const speakOutput = `<amazon:emotion name="disappointed" intensity="high">Justin you broke the code.</amazon:emotion>`;
+        const speakOutput = `<amazon:emotion name="disappointed" intensity="high">Aww no, The code is broken.</amazon:emotion>`;
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -744,6 +758,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         HelpIntentHandler,
         FallbackMessageRequestHandler,
         CancelAndStopIntentHandler,
+        FallbackIntentHandler,
         SessionEndedRequestHandler,
         IntentReflectorHandler, // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
     )
@@ -762,3 +777,4 @@ exports.handler = Alexa.SkillBuilders.custom()
     )
     .withApiClient(new Alexa.DefaultApiClient())
     .lambda();
+    

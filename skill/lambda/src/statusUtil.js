@@ -171,6 +171,7 @@ const getStatus = function(profile) {
     //TODO: Ask Alison what to prompt after cactus wisdom for no needs.
 
     status.message = `${statusMessage} ${prompt}`;
+    status.reprompt = `${prompt}`;
 
     return status;
 };
