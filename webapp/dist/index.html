@@ -10,6 +10,11 @@
                 padding: 0;
                 margin: 0 auto;
             }
+            .fullscreen {
+                max-width: 100vw;
+                max-height: 100vh;
+                margin: auto;
+            }
             .hud {
                 position: absolute;
                 text-align: center;
@@ -60,8 +65,14 @@
                 top: 55%;
                 right: 10%;
             }
+            #onScreenHud {
+                display: none
+            }
         </style>
         <div id="container">
+            <div id="loading" class="hud">
+                <img class="fullscreen" src="./assets/source-art/Pete_FullComp.png" id="backFromTheBrink"/>
+            </div>
             <div id="allBadges" class="hud badgeOverlay">
                 <div class="scrollingBadge">
                     <img src="./assets/source-art/badges/Off/Pete_Badge-BackFromTheBrink.png" id="backFromTheBrink"/>

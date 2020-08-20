@@ -5,7 +5,7 @@ const OrbitControls = require('three/examples/jsm/controls/OrbitControls');
 
 const selector = require('./selector');
 const screenShake = require('./screenShake');
-const badges = require('./badges');
+const windowManager = require('./guiManager');
 const mockData = require('./mockStartupData.json');
 
 const blinds = require('./blinds.js');
@@ -67,11 +67,11 @@ try {
     render();
 
     //Create a Spider after some time.
-    if(assetsLoaded) {
-        window.setTimeout(function() {
+    window.setTimeout(function() {
+        if(assetsLoaded) {
             spider.spawnSpider();
-        }, SPIDER_TIMER);
-    }
+        }
+    }, SPIDER_TIMER);
     
     console.log("post init");
 } catch(err) {
@@ -122,7 +122,6 @@ function update() {
         pail.update(delta);
         blinds.update(delta);
         cactus.update(delta);
-        
     } 
     selector.deselect();
 }
@@ -155,15 +154,20 @@ function setupAlexa() {
             alexaLoaded = true;
             console.log(JSON.stringify("args: " + JSON.stringify(args)));
 
-            console.log(JSON.stringify(message));
+            console.log("Capabilities: " + JSON.stringify(alexaClient.capabilities));
 
-            console.log("Startup Alexa success. Logging device and memory info");
             if(debugLevel >= 1) {
-                alexaClient.performance.getMemoryInfo().then((memInfo) => cloudLog({
-                    display: JSON.stringify(alexaClient.capabilities.display),
+                console.log("Startup Alexa success. Logging device and memory info");
+
+                alexaClient.performance.getMemoryInfo().then((memInfo) => cloudLog("performanceInfo: " + 
+                JSON.stringify({
+                    display: {
+                        innerWidth: window.innerWidth,
+                        innerHeight: window.innerHeight
+                    },
                     memory: JSON.stringify(memInfo),
                     microphone: JSON.stringify(alexaClient.capabilities.microphone)
-                }));
+                })));
                 debugElement.textContent = 'startup succeeded, time to start my game';
                 infoElement.textContent = JSON.stringify(message);
             }
@@ -197,7 +201,7 @@ function setupAlexa() {
                 console.log("Game State: " + JSON.stringify(message.gameState));
                 if(message.gameState.newBadge) {
                     console.log("Showing new badge");
-                    badges.showNewBadge(message.gameState.unlockedBadges.latestKey, message.gameState.unlockedBadges.latest);
+                    windowManager.showNewBadge(message.gameState.unlockedBadges.latestKey, message.gameState.unlockedBadges.latest);
                 }
         
                 //If in intent exists and matches one of the below, play all local animations/sounds.
@@ -213,7 +217,7 @@ function setupAlexa() {
                             blinds.raise();
                             break;
                         case "showBadges":
-                            badges.showBadges();
+                            windowManager.showBadges();
                             break;
                         case "getStatus":
                         case "newCactus":
@@ -328,7 +332,7 @@ function init() {
                 clicked:"badgeButton"
             });
         }
-        badges.showBadges();
+        windowManager.showBadges();
     }
 
     //Load web Audio into the scene
@@ -394,7 +398,7 @@ function refreshGameState(dataPayload) {
 
     //TODO add a refresh to the lighting for the sun
 
-    badges.refreshBadges(dataPayload.unlockedBadges);
+    windowManager.refreshBadges(dataPayload.unlockedBadges);
     
     // Adding the background texture.
     let bgTexture;
@@ -467,6 +471,8 @@ function setUpScene() {
 
     camera.position.set(12.49529444321625, 453.77789466125455, 652.0444919524163); // set the proper position of the camera
     controls.update();
+
+    windowManager.hideLoadingScreen();
 }
 
 /**

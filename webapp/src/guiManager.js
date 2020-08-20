@@ -21,7 +21,6 @@
  * 
  */
 
- //TODO use these eventually and make this class a GUI manager instead of badge specific.
 var infoElement = document.getElementById("info");
 var debugElement = document.getElementById("debugInfo");
 var waterStatusBar = document.getElementById("waterBar"); 
@@ -36,10 +35,11 @@ var fullScreenBadgeOverlay = document.getElementById("allBadges");
 var fullScreenNewBadgeOverlay = document.getElementById("newBadge");
 var canvas = document.getElementById("webGLCanvas");
 
-const BADGE_ART_DIR = "./assets/source-art/badges/";
+const SOURCE_ART_DIR = "./assets/source-art/"
+const BADGE_ART_DIR = SOURCE_ART_DIR + "badges/";
 const NEW_BADGE_BG = BADGE_ART_DIR + "Pete_Background-Badge.png";
 const ALL_BADGE_BG = BADGE_ART_DIR + "Pete_Background-All.png";
-
+const OVERLAY_IMAGE = SOURCE_ART_DIR + "Pete_FullComp.png"
 
 const backFromTheBrink = document.getElementById("backFromTheBrink");
 const earlyBird = document.getElementById("earlyBird");
@@ -48,6 +48,8 @@ const helicopterParent = document.getElementById("helicopterParent");
 const newParent = document.getElementById("newParent");
 const nightOwl = document.getElementById("nightOwl");
 
+const loadingDiv = document.getElementById("loading");
+
 const badgeFiles = {
     helicopterParent: {fileName: "Pete_Badge-BackFromTheBrink.png", domElement: helicopterParent},
     earlyBird: {fileName: "Pete_Badge-EarlyBird.png", domElement: earlyBird},
@@ -55,6 +57,10 @@ const badgeFiles = {
 }
 
 module.exports = {
+    hideLoadingScreen() {
+        loadingDiv.style.display = "none";
+        this.showStatus();
+    },
     refreshBadges(badgeData) {
         //DO our comparison.
         for (const [key, value] of Object.entries(badgeFiles)) {

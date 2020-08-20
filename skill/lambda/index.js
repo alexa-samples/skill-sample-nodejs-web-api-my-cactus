@@ -24,7 +24,7 @@ const SOUND_FX = require('./src/soundFX');
 // Bug Bash
 
 //TODO change this URL to your publicly accessible HTTPS endpoint.
-const webAppBaseURL = "https://502df56c596e.ngrok.io";
+const webAppBaseURL = "https://1ebe25a64067.ngrok.io";
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
