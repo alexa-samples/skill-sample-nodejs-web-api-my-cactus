@@ -24,7 +24,7 @@ const SOUND_FX = require('./src/soundFX');
 // Bug Bash
 
 //TODO change this URL to your publicly accessible HTTPS endpoint.
-const webAppBaseURL = "https://a2989d0d6cdc.ngrok.io";
+const webAppBaseURL = `https://${process.env.Domain}`;
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
@@ -63,7 +63,7 @@ function conditionallyLaunchWebApp(handlerInput) {
             type:"Alexa.Presentation.HTML.Start",
             data: createStateFromSessionAttr(handlerInput.attributesManager.getSessionAttributes()),
             request: {
-                uri: webAppBaseURL + "/dist/",
+                uri: webAppBaseURL + "/index.html",
                 method: "GET"
             },
             configuration: {

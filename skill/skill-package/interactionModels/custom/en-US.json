@@ -1,7 +1,7 @@
 {
     "interactionModel": {
         "languageModel": {
-            "invocationName": "my cactus",
+            "invocationName": "prickly pete",
             "modelConfiguration": {
                 "fallbackIntentSensitivity": {
                     "level": "LOW"
