@@ -63,7 +63,7 @@ function conditionallyLaunchWebApp(handlerInput) {
             type:"Alexa.Presentation.HTML.Start",
             data: createStateFromSessionAttr(handlerInput.attributesManager.getSessionAttributes()),
             request: {
-                uri: webAppBaseURL + "/index.html",
+                uri: webAppBaseURL + "/dist/index.html",
                 method: "GET"
             },
             configuration: {
