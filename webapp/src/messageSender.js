@@ -30,7 +30,7 @@ module.exports = {
         const messagePromise = new Promise((resolve, reject) => {
             alexaClient.skill.sendMessage({
                 intent:"log",
-                log:queue
+                messageQueue:queue
             },
             function(messageSendResponse) {
                 console.log(messageSendResponse.statusCode);

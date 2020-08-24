@@ -287,9 +287,6 @@ const HasCactusNoIntentHandler = {
     }
 };
 
-
-
-
 /**
  * Simple handler for logging messages sent from the webapp
  */
@@ -299,8 +296,27 @@ const WebAppCloudLogger = {
             && getMessageIntent(handlerInput.requestEnvelope) === 'log';
     },
     handle(handlerInput) {
-        const messageToLog = handlerInput.requestEnvelope.request.message.log;
-        console.log(messageToLog);
+        const {
+            messageQueue
+        } = handlerInput.requestEnvelope.request.message;
+        messageQueue.forEach(message => {
+            const {
+                level,
+                log
+            } = message;
+            switch (level) {
+                case "error":
+                    console.error(log);
+                    break;
+                case "warn":
+                    console.warn(log);
+                    break;
+                case "info":
+                    console.log(log);
+                    break;
+            }
+        });
+
         return handlerInput.responseBuilder
             .getResponse();
     }
