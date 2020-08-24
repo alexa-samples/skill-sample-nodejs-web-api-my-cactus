@@ -162,10 +162,6 @@ function setupAlexa() {
                 debugElement.textContent = 'startup succeeded, time to start my game';
                 infoElement.textContent = JSON.stringify(message);
             }
-            messageSender.log("hello");
-            messageSender.log("world");
-            messageSender.error("error");
-            messageSender.warn("warning");
 
             refreshGameState(message);
             //Start BG Music when we know it is an Alexa-enabled device.

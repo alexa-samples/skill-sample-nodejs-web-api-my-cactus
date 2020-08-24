@@ -14,7 +14,7 @@ Parameters:
     Type: String
   BaseWebappUrl:
     Type: String
-    Default: https://2605a9791df0.ngrok.io
+    Default: https://ce8e3fe251d3.ngrok.io
     Description: Base URL for the web application (WebApp Directory)
 Resources:
   AlexaSkillIAMRole:
@@ -40,22 +40,6 @@ Resources:
                     - logs:*
                     - S3:*
                   Resource: "*"
-  # Not using right now.
-  AlexaPersistentAttributesTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      BillingMode: PROVISIONED
-      AttributeDefinitions:
-        -
-          AttributeName: "id"
-          AttributeType: "S"
-      KeySchema:
-        -
-          AttributeName: "id"
-          KeyType: "HASH"
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
   S3UserDataBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
@@ -80,7 +64,6 @@ Resources:
         Variables:
           Domain: !GetAtt [S3WebAppBucket, DomainName]
           S3_PERSISTENCE_BUCKET: {Ref: S3UserDataBucket}
-          DYNAMODB_TABLE_NAME: {Ref: AlexaPersistentAttributesTable}
   AlexaSkillFunctionEventPermission:
     Type: AWS::Lambda::Permission
     Properties:
