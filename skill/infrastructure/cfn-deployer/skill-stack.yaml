@@ -12,10 +12,6 @@ Parameters:
     Type: String
   CodeVersion:
     Type: String
-  BaseWebappUrl:
-    Type: String
-    Default: https://ce8e3fe251d3.ngrok.io
-    Description: Base URL for the web application (WebApp Directory)
 Resources:
   AlexaSkillIAMRole:
       Type: AWS::IAM::Role
