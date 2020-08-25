@@ -14,7 +14,9 @@ There is a set of [mock data](./src/mockStartupData.json) for startup on a compu
 
 The node dependencies include http-server for development purposes which will start a web server locally. You will need to use another tool to create a publicly accessible https endpoint to serve on your Alexa device. One example is [ngrok](https://ngrok.com/).
 
-This is for demonstration purposes. When deploying to production, you will want to use something more advanced than a local http-server. For instance, you can use S3 + Cloudfront with a nicer DNS bound to your cloudfront url (remember, your customers will see your domain and uri!). 
+Another option is to use the publicly accessible resources made when you deploy the skill code. See the README.md in the skill directory for more information. 
+
+This is for demonstration purposes. When deploying to production, you will want to use something more advanced than a local http-server. For instance, you can use S3 + Cloudfront with a nicer DNS bound to your cloudfront url (remember, your customers will see your domain and uri!).
 
 ## How to run the web application
 
@@ -30,12 +32,13 @@ All dependencies are declared in the package.json file. There are also some buil
 `npm run build`: performs the webpack build only. 
 `npm run open`: starts the server and opens the page on localhost.
 `npm run buildConstant`: sets webpack to listen on file changes and builds immediately upon saving. Useful for rapid iteration.
+`npm run uploadS3`: uploads the assets to S3 bucket set in the environment variable, MY_CACTUS_S3. Note you will need to build/deploy the skill side of the project before the S3 bucket that will be used in the code is created. Use the public domain for the bucket as the value for MT_CACTUS_S3.
 
 If you need to kill the server, use ctrl+c and restart with one of the open commands. 
 Note, the server is started in "no-cache" mode (-c-1 flag) for MUCH easier development and debugging. You do not want to run your production application like this as it will slow down the customer experience on repeat skill invocations. 
 
 ## Bugs?
 
-Please open bug reports on Github using Github issues. Include the steps taken to reproduce. You can use this for suggested improvements as well. First, check out the list of [known issues](./KNOWN_ISSUES.md).
+Please open bug reports on Github using Github issues. Include the steps taken to reproduce. You can use this for suggested improvements, as well.
 
 Feel free to fork and open a pull request if you have a fix or improvement to make, also!
