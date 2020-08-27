@@ -6,20 +6,15 @@ const util = require('./util.js');
 
 const statusUtil = require('./src/statusUtil');
 const badgeUtil = require('./src/badgeUtil');
-const cactusUtil = require('./src/cactusUtil');
+const profileUtil = require('./src/profileUtil');
 
 const moment = require('moment-timezone');
 
 const SOUND_FX = require('./src/soundFX');
 
 // BIG TODOS:
-// 0  rename cactusUtil to profileUtil
 
-// 1. Address what to when the user says NO
-// 2. Update the help intent to be more useful
-// 3. Update causeOfDeath notes to their actual strings
-
-// 4. SSML additions 
+// 1. SSML additions 
 
 // Bug Bash
 
@@ -98,7 +93,7 @@ const HasCactusLaunchRequestHandler = {
         const status = statusUtil.getStatus(profile);
         
         if (!status.alive) {            
-            profile = cactusUtil.cleanUpCactus(profile);
+            profile = profileUtil.cleanUpCactus(profile);
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
@@ -201,7 +196,7 @@ const WaterCactusIntentHandler = {
         //TODO: talk with Alison about warning messages about over watering 
         //TODO: figure out max waterLevel based upon cactus size (no hardcoding to 20)
         if (!status.alive) {
-            profile = cactusUtil.cleanUpCactus(profile);
+            profile = profileUtil.cleanUpCactus(profile);
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
@@ -266,8 +261,12 @@ const DeadCactusNoIntentHandler = {
             && !getProfile(handlerInput).cactus.name;
     },
     handle(handlerInput) {
+        let speakOutput = "Ok. I'll give you time to grieve. I have lots "; 
+        speakOutput += "more cacti in need of homes when you decide you're "; 
+        speakOutput += "ready to try again. Goodbye";
+
         return handlerInput.responseBuilder
-            .speak('Aw too bad. The next time you open the skill, you can start over again.')
+            .speak(speakOutput)
             .getResponse();
     }
 };
@@ -286,9 +285,6 @@ const HasCactusNoIntentHandler = {
             .getResponse();
     }
 };
-
-
-
 
 /**
  * Simple handler for logging messages sent from the webapp
@@ -338,14 +334,18 @@ const ShowBadgesIntentHandler = {
         const prompt = "What would you like to do?";
         speakOutput += prompt;
         
-        handlerInput.responseBuilder.addDirective({
-            "type":"Alexa.Presentation.HTML.HandleMessage",
-            "message": {
-                "intent":"showBadges",
-                "playAnimation": true,
-                "gameState": getProfile(handlerInput)
-            }
-        });
+        
+        // TODO: Ask Joe why he's calling getProfile when we already have profile.
+        if(supportsHTMLInterface(handlerInput)) {
+            handlerInput.responseBuilder.addDirective({
+                "type":"Alexa.Presentation.HTML.HandleMessage",
+                "message": {
+                    "intent":"showBadges",
+                    "playAnimation": true,
+                    "gameState": getProfile(handlerInput)
+                }
+            });
+        }
         
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -514,14 +514,27 @@ const FallbackMessageRequestHandler = {
     }
 }
 
-
 const HelpIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.HelpIntent';
     },
     handle(handlerInput) {
-        const speakOutput = 'Help Intent'; // TODO make this better.
+
+        // TODO: Ask Alison for a better message for the case where they ask for
+        // help before the cactus has been created.
+        let speakOutput = "This is my cactus. A cactus raising simulation game. ";
+
+        const profile = getProfile(handlerInput);
+
+        if (profile.cactus.name) {
+            speakOutput = `You’re raising a cactus named ${profile.cactus.name}. `;
+        }
+
+        speakOutput += "You can open the blinds during the day to make sure they get enough sunshine, "
+        speakOutput += "but don’t forget to close them at night or they’ll get cold! "        
+        speakOutput += "Pay close attention to their water, too. "
+        speakOutput += "Over-watering is just as bad as a drought! "
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -646,7 +659,7 @@ const loadProfileInterceptor = {
         
         // If no profile initiate a new one - first interaction with skill
         if (!profile.hasOwnProperty("cactus")) {
-            profile = cactusUtil.defaultProfile(timeZone);
+            profile = profileUtil.defaultProfile(timeZone);
             console.log('initializing profile', profile);
         } else {
             profile.cactus = statusUtil.computeStatus(profile, moment(), timeZone);

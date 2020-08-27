@@ -121,7 +121,7 @@ const getStatus = function(profile) {
         }
         status.causeOfDeath = causeOfDeath;
     
-        statusMessage = `${SOUND_FX.DEATH_TONE} ${profile.cactus.name} ${getDeathNote(causeOfDeath)} `;
+        statusMessage = `${SOUND_FX.DEATH_TONE} ${getDeathNote(profile.cactus.name, causeOfDeath)} `;
         prompt = "Want to start over with a new cactus?";
     }
     // otherwise it has needs
@@ -261,20 +261,28 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
     return cactus;
 };
 
-const getDeathNote = function(causeOfDeath) {
+const getDeathNote = function(cactusName, causeOfDeath) {
     
-    let deathNote;
+    let deathNote = `Here lies ${cactusName}; Its life you took into your hands; `;
+    deathNote += "Agreeing to meet their every demand. ";
 
     switch (causeOfDeath) {
         case "dehydration":
-            deathNote = "Insert dehydration message here. ";
+            deathNote += "But inattentive, you were; ";
+            deathNote += "there was one task you didn't bother; ";
+            deathNote += "and today we learned that even virtual cacti need water. ";
+            deathNote += `You forgot to water ${cactusName}. They've perished from dehydration. `;
             break;
         case "drowning":
-            deathNote = "Insert drowning message here. ";
+            deathNote += "But overenthusiastic, you were; ";
+            deathNote += "though your intentions were sound; Today we learned at even virtual cacti can drown. ";
+            deathNote += `You over-watered ${cactusName}. They've died from drowning. `;
             break;
         // default cod is neglect
         default:
-            deathNote = "Insert neglect message here. ";
+            deathNote += "But slack off, you did, it's plain to see, ";
+            deathNote += "And today we learned that even virtual cacti have needs."
+            deathNote += `You let ${cactusName}'s heath score drop to 0. `;
             break;
     }
     return deathNote;

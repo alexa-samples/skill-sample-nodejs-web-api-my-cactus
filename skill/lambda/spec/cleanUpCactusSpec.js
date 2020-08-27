@@ -1,12 +1,10 @@
-const cactusUtil = require('../src/cactusUtil');
-const moment = require('moment-timezone');
-
+const profileUtil = require('../src/profileUtil');
 describe('cleanUpCactus', function() {
     it('should reset the cactus and badges.', function() {
 
         const profile = require('../spec/profiles/dead-launch.json');
 
-        const result = cactusUtil.cleanUpCactus(profile);
+        const result = profileUtil.cleanUpCactus(profile);
 
         // checking the default cactus values
         expect(result.cactus.waterLevel).toBe(5);
