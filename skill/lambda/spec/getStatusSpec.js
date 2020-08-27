@@ -2,7 +2,7 @@
 
 const statusUtil = require('../src/statusUtil');
 
-describe('getgetStatusNeeds', function() {
+describe('getStatusNeeds', function() {
     it('should need water', function() {
         const needWaterProfile = require('./profiles/negative-water-postive-health.json');
 
