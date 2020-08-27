@@ -51,10 +51,7 @@
           {
             "type": "ALEXA_PRESENTATION_HTML"
           }
-        ],
-        "endpoint": {
-          "uri": ""
-        }
+        ]
       }
     },
     "manifestVersion": "1.0",
