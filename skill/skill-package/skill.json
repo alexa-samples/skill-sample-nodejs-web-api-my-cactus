@@ -2,9 +2,6 @@
   "manifest": {
     "apis": {
       "custom": {
-        "endpoint": {
-          "uri": "LAMBDA_ARN_HERE"
-        },
         "interfaces": [
           {
             "supportedViewports": [
@@ -66,12 +63,12 @@
         "en-US": {
           "description": "Sample Full Description",
           "examplePhrases": [
-            "Alexa open hello world",
+            "Alexa open my cactus",
             "hello",
             "help"
           ],
           "keywords": [],
-          "name": "PricklyPete",
+          "name": "My Cactus",
           "summary": "Sample Short Description"
         }
       },

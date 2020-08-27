@@ -24,7 +24,7 @@ const SOUND_FX = require('./src/soundFX');
 // Bug Bash
 
 //TODO change this URL to your publicly accessible HTTPS endpoint.
-const webAppBaseURL = "https://a2989d0d6cdc.ngrok.io";
+const webAppBaseURL = `https://${process.env.Domain}`;
 
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
@@ -63,7 +63,7 @@ function conditionallyLaunchWebApp(handlerInput) {
             type:"Alexa.Presentation.HTML.Start",
             data: createStateFromSessionAttr(handlerInput.attributesManager.getSessionAttributes()),
             request: {
-                uri: webAppBaseURL + "/dist/",
+                uri: webAppBaseURL + "/dist/index.html",
                 method: "GET"
             },
             configuration: {
@@ -287,9 +287,6 @@ const HasCactusNoIntentHandler = {
     }
 };
 
-
-
-
 /**
  * Simple handler for logging messages sent from the webapp
  */
@@ -299,8 +296,27 @@ const WebAppCloudLogger = {
             && getMessageIntent(handlerInput.requestEnvelope) === 'log';
     },
     handle(handlerInput) {
-        const messageToLog = handlerInput.requestEnvelope.request.message.log;
-        console.log(messageToLog);
+        const {
+            messageQueue
+        } = handlerInput.requestEnvelope.request.message;
+        messageQueue.forEach(message => {
+            const {
+                level,
+                log
+            } = message;
+            switch (level) {
+                case "error":
+                    console.error(log);
+                    break;
+                case "warn":
+                    console.warn(log);
+                    break;
+                case "info":
+                    console.log(log);
+                    break;
+            }
+        });
+
         return handlerInput.responseBuilder
             .getResponse();
     }

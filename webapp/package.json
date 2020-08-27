@@ -8,9 +8,10 @@
     "build": "webpack --config webpack.config.js",
     "buildConstant": "webpack -w --config webpack.config.js",
     "open": "http-server . -p 8080 -o /dist/ -c-1",
-    "buildOpen": "webpack --config webpack.config.js && http-server . -p 8080 -o /dist/ -c-1"
+    "buildOpen": "webpack --config webpack.config.js && http-server . -p 8080 -o /dist/ -c-1",
+    "uploadS3":"aws s3 cp ./dist s3://$MY_CACTUS_S3/dist/ --recursive --acl public-read"
   },
-  "author": "joemocode",
+  "author": "Amazon Alexa",
   "license": "ISC",
   "dependencies": {
     "moment": "^2.27.0",

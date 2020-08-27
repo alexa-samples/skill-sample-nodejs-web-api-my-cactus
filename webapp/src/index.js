@@ -7,6 +7,7 @@ const selector = require('./selector');
 const screenShake = require('./screenShake');
 const windowManager = require('./guiManager');
 const mockData = require('./mockStartupData.json');
+const messageSender = require('./messageSender.js');
 
 const blinds = require('./blinds.js');
 const cactus = require('./cactus.js');
@@ -77,7 +78,7 @@ try {
 } catch(err) {
     const errMessage = `error: ${err.name}, message: ${err.message}, stack: ${err.stack}`;
     debugElement.textContent = JSON.stringify(errMessage);
-    cloudLog(errMessage);
+    messageSender.error(errMessage);
 }
 
 //Update function
@@ -112,6 +113,7 @@ function update() {
 
     controls.update(); // TODO fix this later. Screen shake does not play nice.
     screenShake.update(delta * 1000); //delta time convert to millis
+    messageSender.update(delta * 1000); // Update messageSender
 
     if(debugLevel >= 1) {
         //more logging if needed
@@ -124,20 +126,6 @@ function update() {
         cactus.update(delta);
     } 
     selector.deselect();
-}
-
-/**
- * Logs a message locally and if alexa is initialized, pushes the message to the lambda to log.
- * @param {*} messageStr 
- */
-function cloudLog(payload) {
-    console.log(payload);
-    if(alexaLoaded) {
-        alexaClient.skill.sendMessage({
-            intent: "log",
-            log: payload
-        });
-    }
 }
 
 /**
@@ -156,21 +144,25 @@ function setupAlexa() {
 
             console.log("Capabilities: " + JSON.stringify(alexaClient.capabilities));
 
+            //initialize our messageSender class
+            messageSender.init(alexaClient);
+
             if(debugLevel >= 1) {
                 console.log("Startup Alexa success. Logging device and memory info");
 
-                alexaClient.performance.getMemoryInfo().then((memInfo) => cloudLog("performanceInfo: " + 
+                alexaClient.performance.getMemoryInfo().then((memInfo) => messageSender.log("performanceInfo: " + 
                 JSON.stringify({
                     display: {
                         innerWidth: window.innerWidth,
                         innerHeight: window.innerHeight
                     },
-                    memory: JSON.stringify(memInfo),
-                    microphone: JSON.stringify(alexaClient.capabilities.microphone)
+                    memory: memInfo,
+                    microphone: alexaClient.capabilities.microphone
                 })));
                 debugElement.textContent = 'startup succeeded, time to start my game';
                 infoElement.textContent = JSON.stringify(message);
             }
+
             refreshGameState(message);
             //Start BG Music when we know it is an Alexa-enabled device.
             bgMusic.play();
@@ -562,7 +554,7 @@ function domTouch(event) {
  * @param {*} screenY 
  */
 function onClickOrTouch(screenX, screenY) {
-    cloudLog(`click/touch (${screenX}, ${screenY})`);
+    messageSender.log(`click/touch (${screenX}, ${screenY})`);
     const nonNormalPos = new THREE.Vector2(screenX, screenY);
     const screenVector = normalize2DPoint(nonNormalPos);
     const worldVector = new THREE.Vector3(screenX, screenY, -1).unproject(camera);
