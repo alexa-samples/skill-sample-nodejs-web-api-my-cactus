@@ -77,7 +77,7 @@ try {
     console.log("post init");
 } catch(err) {
     const errMessage = `error: ${err.name}, message: ${err.message}, stack: ${err.stack}`;
-    debugElement.textContent = JSON.stringify(errMessage);
+    debugElement.appendChild(document.createTextNode("\n" + JSON.stringify(errMessage)));
     messageSender.error(errMessage);
 }
 
@@ -159,7 +159,7 @@ function setupAlexa() {
                     memory: memInfo,
                     microphone: alexaClient.capabilities.microphone
                 })));
-                debugElement.textContent = 'startup succeeded, time to start my game';
+                debugElement.appendChild(document.createTextNode('\nstartup succeeded, time to start my game'));
                 infoElement.textContent = JSON.stringify(message);
             }
 
@@ -180,7 +180,7 @@ function setupAlexa() {
             // Called every time a data payload comes from backend as a message Directive.
             alexaClient.skill.onMessage((message) => {
                 if(message) {
-                    debugElement.textContent = JSON.stringify(message);
+                    debugElement.appendChild(document.createTextNode("\n" + JSON.stringify(message)));
                     console.log("Got a message for you: " + JSON.stringify(message));
                 }
         
@@ -235,7 +235,8 @@ function setupAlexa() {
         .catch(error => {
             console.log(JSON.stringify(error));
             if(debugLevel >= 1) {
-                debugElement.textContent =  'startup failed, better message customer';
+                debugElement.appendChild(document.createTextNode('\nstartup failed, better message customer'));
+
                 infoElement.textContent = 'startup failed, Sorry, customer.';
             }
             alexa = null;

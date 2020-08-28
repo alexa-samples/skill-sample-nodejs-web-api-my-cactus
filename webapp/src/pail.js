@@ -39,7 +39,7 @@ module.exports = {
                     intent:"WaterCactusIntent"
                 },
                 function(messageSendResponse) {
-                    textElement.textContent = JSON.stringify(messageSendResponse);
+                    textElement.appendChild(document.createTextNode("\n" + JSON.stringify(messageSendResponse)));
                     console.log(messageSendResponse.statusCode);
                     switch(messageSendResponse.statusCode) {
                         case 500:
