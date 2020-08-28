@@ -44,6 +44,24 @@ Resources:
     DeletionPolicy: Delete
     Properties:
       AccessControl: PublicRead
+  CloudfrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        DefaultCacheBehavior:
+          AllowedMethods: [GET, HEAD]
+          CachedMethods: [GET, HEAD]
+          DefaultTTL: 3600 #This is deprecated. Recomendation is to use Cache Policy but not exposed in CFN
+          TargetOriginId: WebAppCloudfrontDistribution
+          ViewerProtocolPolicy: https-only
+          ForwardedValues:
+            QueryString: false
+        Enabled: true
+        Origins:
+          - DomainName: !GetAtt [S3WebAppBucket, DomainName]
+            CustomOriginConfig: 
+              OriginProtocolPolicy: match-viewer
+            Id: WebAppCloudfrontDistribution
   AlexaSkillFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -58,7 +76,7 @@ Resources:
       Timeout: 60
       Environment:
         Variables:
-          Domain: !GetAtt [S3WebAppBucket, DomainName]
+          Domain: !GetAtt [CloudfrontDistribution, DomainName]
           S3_PERSISTENCE_BUCKET: {Ref: S3UserDataBucket}
   AlexaSkillFunctionEventPermission:
     Type: AWS::Lambda::Permission

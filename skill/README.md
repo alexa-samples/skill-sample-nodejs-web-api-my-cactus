@@ -8,6 +8,15 @@ To set up this sample, first build the node packages:
 2. `npm install`
 3. `cd ..`
 
+Now, your AWS entity associated with the CLI will need access to create and manage the following resources: Cloudformation, IAM, AWS Lambda, Cloudfront, S3
+
+For instance, the following policies will grant deploy access:
+* AWSLambdaFullAccess
+* IAMFullAccess
+* AmazonS3FullAccess
+* CloudFrontFullAccess
+* AWSCloudFormationFullAccess
+
 Then you can deploy using: `ask deploy` from this directory. This will set up the stack, but will not upload the assets needed. For that, you will need to get the name of the PublicRead S3 bucket created in the cloudformation deployment and set that as an environment variable. For instance: 
 
 `export MY_CACTUS_S3="ask-pricklypete-default-skillstack-s3webappbucket-31a9w7rv6uls.s3.amazonaws.com"`
