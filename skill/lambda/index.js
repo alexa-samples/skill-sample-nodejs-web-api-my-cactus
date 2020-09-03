@@ -24,6 +24,8 @@ const webAppBaseURL = `https://${process.env.Domain}`;
 const MESSAGE_REQUEST = 'Alexa.Presentation.HTML.Message';
 const WATER_INCREMENT = 10;
 
+// TODO evaluate if we really want to keep this constant since we are not
+// really using it now.
 const WATER_LEVEL_PER_LITER = 84;
 
 const FALLBACK_REPROMPT = "What would you like to do?";
@@ -33,19 +35,31 @@ const LaunchRequestHandler = {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
     },
     handle(handlerInput) {
-        let speakOutput = `${SOUND_FX.STARTUP_TONE} Your shelf is empty, but don\'t despair. `; 
-        speakOutput += 'I\'m here to pair you with the right prickly pear. ';
-        speakOutput += 'Water, food, and light is what it needs. ';
-        speakOutput += 'Treat your succulent well, and it\'ll reward your good deeds. ';
+
+        let speakOutput = `${SOUND_FX.STARTUP_TONE} `;
+        speakOutput += 'Your shelf is empty, ';
+        speakOutput += 'but <amazon:emotion name="excited" intensity="medium">';
+        speakOutput += 'don\’t despair;</amazon:emotion> <break time=".5s"/>';
+        speakOutput += 'I\’m here to pair you with the right prickly pear; ';
+        speakOutput += '<break time=".5s"/>Water and light are what it ';
+        speakOutput += 'needs;<break time=".5s"/>';
+        speakOutput += "Treat this succulent well, and they’ll reward your "; 
+        speakOutput += 'good deeds!<break time=".1s"/> ';
+        speakOutput += 'To choose just the right cactus that needs ';
+        speakOutput += '<amazon:emotion name="excited" intensity="medium">your ';
+        speakOutput += 'assistance,</amazon:emotion> '
         
-        speakOutput += 'To choose just the right cactus that needs your assistance, tell me ';
-        const reprompt = 'If you could go anywhere in the world, where would you visit?';
+        let reprompt = '<break time=".5s"/>';
+        reprompt += 'tell me: If you could go anywhere in the world, where ';
+        reprompt += 'would <amazon:emotion name="excited" intensity="medium">';
+        reprompt += 'you visit?</amazon:emotion>';
+
         speakOutput += reprompt;
         conditionallyLaunchWebApp(handlerInput);
         
         return handlerInput.responseBuilder
-            .speak(speakOutput)
-            .reprompt(reprompt)
+            .speak(ssmlWrapDomain(speakOutput))
+            .reprompt(ssmlWrapDomain(reprompt))
             .getResponse();
     }
 };
@@ -123,6 +137,10 @@ const hasCactusCaptureDestinationHandler = {
     }
 }
 
+const ssmlWrapDomain = function(text) {
+    return `<amazon:domain name="long-form">${text}</amazon:domain>`;
+};
+
 const CaptureDestinationHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -132,7 +150,9 @@ const CaptureDestinationHandler = {
         
         const profile = getProfile(handlerInput);
         const name = await getRandomName();
-        profile.cactus.name = name.replace(/"/g,"");    
+
+        profile.cactus.name = name.replace(/"/g,"");
+        profile.cactus.voice = util.getRandomItemFromList(["Brian", "Emma"]);
         //TODO: save the destination and determine a flower color
         
         console.log("CaptureDestinationHandler", JSON.stringify(profile));
@@ -141,17 +161,35 @@ const CaptureDestinationHandler = {
     
         attributesManager.setPersistentAttributes(profile);
         attributesManager.savePersistentAttributes();
+
         
-        let speakOutput = `${SOUND_FX.DESTINATION_TONE} I found the perfect cactus for you. `;
-        speakOutput += `Meet ${name}. `;
-        speakOutput += 'They need water and sunlight to thrive. ';
-        speakOutput += 'They\'re just a sprout right now, but keep them happy ';
-        speakOutput += 'and they\'ll grow a little each day. ';
-        
-        speakOutput += 'You can ask me to water - but not too much! ';
+        let speakOutput = "${SOUND_FX.DESTINATION_TONE} ";
+        speakOutput += 'I found the <prosody pitch="high">perfect</prosody> ';
+        speakOutput += '<prosody volume="loud">cactus for you!</prosody> ';
+        speakOutput += `Meet ${name}. They need water, and sunlight to thrive. `; 
+        speakOutput += '<prosody rate="110%">They’re just a sprout right now, ';
+        speakOutput += 'but keep them happy and they’ll grow a ';
+        speakOutput += '<prosody pitch="high">little</prosody> each day. ';
+        speakOutput += '</prosody> <break time="1s"/><prosody rate="110%">You ';
+        speakOutput += 'can ask me to water your cactus; but not ';
+        speakOutput += '<emphasis level="strong"></emphasis>';
+        speakOutput += '<prosody pitch="high">too much!</prosody></prosody> ';
         speakOutput += 'Or you can ask me to open and close the blinds. ';
+        speakOutput += `<prosody rate="110%">${name} needs lots of sun, but `;
+        speakOutput += 'they’ll get <prosody pitch="high">chilly</prosody> at ';
+        speakOutput += 'night if you don’t close them!</prosody> ';
+
     
-        let repromptOutput = `${name} needs sun, you can open the blinds`;        
+        // let speakOutput = `${SOUND_FX.DESTINATION_TONE} I found the perfect cactus for you. `;
+        // speakOutput += `Meet ${name}. `;
+        // speakOutput += 'They need water and sunlight to thrive. ';
+        // speakOutput += 'They\'re just a sprout right now, but keep them happy ';
+        // speakOutput += 'and they\'ll grow a little each day. ';
+        
+        // speakOutput += 'You can ask me to water - but not too much! ';
+        // speakOutput += 'Or you can ask me to open and close the blinds. ';
+    
+        let repromptOutput = `${name} needs sun, you can open the blinds.`;        
         
         if (profile.cactus.blindState === "open") {
             repromptOutput = `${name} is cold, gets chilly at night! You can close the blinds.`;        
@@ -168,10 +206,9 @@ const CaptureDestinationHandler = {
             });
         }
         
-        
         return handlerInput.responseBuilder
-            .speak(speakOutput + repromptOutput)
-            .reprompt(repromptOutput)
+            .speak(ssmlWrapDomain(speakOutput + repromptOutput))
+            .reprompt(ssmlWrapDomain(repromptOutput))
             .getResponse();
     }
 };
@@ -253,7 +290,6 @@ const YesIntentHandler = {
 };
 
 
-// TODO: Ask Alison for new rejection response.
 const DeadCactusNoIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -544,16 +580,20 @@ const HelpIntentHandler = {
         // help before the cactus has been created.
         let speakOutput = "This is my cactus. A cactus raising simulation game. ";
 
+        speakOutput = "I have lots of cacti in need of care! ";
+        speakOutput += "To match you with the right one for you to raise as your own, though, ";
+        speakOutput += "I’ll need to know a bit about you. ";
+        speakOutput += "If you could go anywhere in the world, where would you visit? ";
+
         const profile = getProfile(handlerInput);
 
         if (profile.cactus.name) {
             speakOutput = `You’re raising a cactus named ${profile.cactus.name}. `;
+            speakOutput += "You can open the blinds during the day to make sure they get enough sunshine, "
+            speakOutput += "but don’t forget to close them at night or they’ll get cold! "        
+            speakOutput += "Pay close attention to their water, too. "
+            speakOutput += "Over-watering is just as bad as a drought! "            
         }
-
-        speakOutput += "You can open the blinds during the day to make sure they get enough sunshine, "
-        speakOutput += "but don’t forget to close them at night or they’ll get cold! "        
-        speakOutput += "Pay close attention to their water, too. "
-        speakOutput += "Over-watering is just as bad as a drought! "
 
         return handlerInput.responseBuilder
             .speak(speakOutput)

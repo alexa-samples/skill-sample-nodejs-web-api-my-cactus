@@ -36,7 +36,13 @@ const getTimeZone = async function(handlerInput, deviceId) {
     return userTimeZone
 }
 
+const getRandomItemFromList = function(list) {
+    const randomIndex = Math.floor(Math.random() * list.length);
+    return list[randomIndex];
+}
+
 module.exports = {
     getS3PreSignedUrl,
-    getTimeZone
+    getTimeZone,
+    getRandomItemFromList
 }
