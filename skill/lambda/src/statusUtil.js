@@ -1,6 +1,7 @@
 const isItDaylight = require('./isItDaylight');
 const moment = require('moment-timezone');
 const SOUND_FX = require('./soundFX');
+const util = require('../util');
 
 const WATER_THRESHOLD = 20;
 
@@ -128,7 +129,7 @@ const getStatus = function(profile) {
     else {
         
         if (!needs.water && !needs.comfort) {
-            statusMessage = `${profile.cactus.name} ${getRandomItemFromList(NO_NEEDS)} ${getRandomItemFromList(WISDOM_MESSAGES)}`;        
+            statusMessage = `${profile.cactus.name} ${util.getRandomItemFromList(NO_NEEDS)} ${util.getRandomItemFromList(WISDOM_MESSAGES)}`;        
         } else if (needs.water || needs.comfort) {
             
             // TODO: move this to API gateway and make sure that the items are not global 
@@ -145,11 +146,11 @@ const getStatus = function(profile) {
                 `${profile.cactus.name} is feeling a bit blase.`, 
             ];
             
-            statusMessage = getRandomItemFromList(ONE_NEED);
+            statusMessage = util.getRandomItemFromList(ONE_NEED);
             
         } else {
             
-            statusMessage = `${profile.cactus.name} ${getRandomItemFromList(TWO_NEEDS)}`;
+            statusMessage = `${profile.cactus.name} ${util.getRandomItemFromList(TWO_NEEDS)}`;
         }
         
         if(needs.water) {
@@ -175,11 +176,6 @@ const getStatus = function(profile) {
 
     return status;
 };
-
-const getRandomItemFromList = function(list) {
-    const randomIndex = Math.floor(Math.random() * list.length);
-    return list[randomIndex];
-}
 
 const computeStatus = function(profile, latestInteraction, timeZone) {
 
