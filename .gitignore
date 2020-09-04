@@ -3,7 +3,7 @@ skill/lambda/node_modules
 .ask/
 
 # Don't commit any local persistence files
-./local_persistence_bucket/*
+lambda/local_persistence_bucket/
 
 # Logs
 logs
