@@ -1,7 +1,6 @@
 #From Alexa Hosted CLI Creation
 skill/lambda/node_modules
 .ask/
-ask-resources.json
 
 # Logs
 logs
