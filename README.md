@@ -47,9 +47,15 @@ This will take the files and upload them. From there, you can directly test and 
 
 ### Clone the Git repo
 
-If you want to make changes to this repo and set up the skill using the previous methods, 
+If you want to make changes to this repo and have set up the skill using the previous methods, follow these instructions so you can pull the latest code when you need to or create your own pull requests.
 
-TODO Write these.
+From the top level directory, run:
+
+ git init .
+
+ git remote add origin https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus.git
+
+
 
 ## Web Application Setup
 
