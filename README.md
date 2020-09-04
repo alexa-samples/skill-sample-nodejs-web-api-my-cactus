@@ -8,13 +8,15 @@ This skill uses the Alexa Web API for Games for 3D graphics on capable devices. 
 
 This project is meant to be used with ASK CLI V2. There is AWS infrastructure involved and you will also need an AWS account for this. This uses the ASK CLI V2 cfn-deployer. The infrastructure is defined in [skill-stack.yaml](./infrastructure/cfn-deployer/skill-stack.yaml). The code is defined in the lambda directory. 
 
-TODO: rewrite to use ask new --skill-template <git url>
-Update instructions with local testing. 
 
 ### Get this repo
-If you want to run this sample, make sure you are running ASK CLI v2. From your terminal, try:
+If you want to run this sample, make sure you are running ASK CLI v2. For instructions on doing so and setting up an AWS IAM user for use with the CLI, see [the technical reference docs.](https://developer.amazon.com/en-US/docs/alexa/smapi/quick-start-alexa-skills-kit-command-line-interface.html)
 
-`ask new --skill-template https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus`
+From your terminal, try:
+
+`ask new --template-url https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus`
+
+Select `AWS with CloudFormation`.
 
 Use the defaults for each of the answers. This will set you up with the skill. From there: 
 
@@ -42,6 +44,12 @@ Then, head over to the webapp directory. From there, run:
 `uploadS3`
 
 This will take the files and upload them. From there, you can directly test and the code will point to the public website hosted in the cloud. If you would like to override the value provided for the publicly accessible link to a local one (for instance, if you are serving the assets from your local environment), simply open up the Lambda console, and override the "Domain" environment variable with your own. For more instructions head to the [webapp directory](./webapp).
+
+### Clone the Git repo
+
+If you want to make changes to this repo and set up the skill using the previous methods, 
+
+TODO Write these.
 
 ## Web Application Setup
 
