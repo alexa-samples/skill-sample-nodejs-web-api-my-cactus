@@ -129,6 +129,7 @@ const getStatus = function(profile) {
     else {
         
         if (!needs.water && !needs.comfort) {
+            prompt = util.getRandomItemFromList(WISDOM_MESSAGES);
             statusMessage = `${profile.cactus.name} ${util.getRandomItemFromList(NO_NEEDS)} ${util.getRandomItemFromList(WISDOM_MESSAGES)}`;        
         } else if (needs.water || needs.comfort) {
             
@@ -168,6 +169,7 @@ const getStatus = function(profile) {
         if (needs.water && needs.comfort) {
             prompt += " Which do you want?";
         }
+
     }
     //TODO: Ask Alison what to prompt after cactus wisdom for no needs.
 

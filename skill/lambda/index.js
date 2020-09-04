@@ -56,9 +56,13 @@ const LaunchRequestHandler = {
 
         speakOutput += reprompt;
         conditionallyLaunchWebApp(handlerInput);
+        handlerInput.responseBuilder.speak(ssmlWrapDomain(speakOutput));
+            
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
         
         return handlerInput.responseBuilder
-            .speak(ssmlWrapDomain(speakOutput))
             .reprompt(ssmlWrapDomain(reprompt))
             .getResponse();
     }
@@ -94,6 +98,16 @@ function supportsHTMLInterface(handlerInput) {
     return htmlInterface !== null && htmlInterface !== undefined;
 }
 
+/**
+ * Checks if a fireTV is requesting our skill. 
+ * If so, use this to NOT include a reprompt to avoid push to talk experience.
+ * @param {*} handlerInput 
+ */
+function isHTMLCapableFireTV(handlerInput) {
+    return supportsHTMLInterface(handlerInput) 
+            && Alexa.getViewportProfile(handlerInput.requestEnvelope).includes("TV")
+}
+
 const HasCactusLaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest'
@@ -116,9 +130,13 @@ const HasCactusLaunchRequestHandler = {
         }
         
         conditionallyLaunchWebApp(handlerInput);
+        handlerInput.responseBuilder.speak(status.message);
         
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
+
         return handlerInput.responseBuilder
-            .speak(status.message)
             .reprompt(status.reprompt)
             .getResponse();
     }
@@ -131,8 +149,13 @@ const hasCactusCaptureDestinationHandler = {
             && getProfile(handlerInput).cactus.name;
     },
     handle(handlerInput){
-        return handlerInput.responseBuilder
-            .speak('We already have a cactus')//TODO, do we need a reprompt?
+        handlerInput.responseBuilder.speak('We already have a cactus')
+
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
+
+        return handlerInput.responseBuilder//TODO, do we need a reprompt?
             .getResponse();
     }
 }
@@ -205,9 +228,13 @@ const CaptureDestinationHandler = {
                 }
             });
         }
+
+        handlerInput.responseBuilder.speak(ssmlWrapDomain(speakOutput + repromptOutput))
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
         
         return handlerInput.responseBuilder
-            .speak(ssmlWrapDomain(speakOutput + repromptOutput))
             .reprompt(ssmlWrapDomain(repromptOutput))
             .getResponse();
     }
@@ -257,9 +284,12 @@ const WaterCactusIntentHandler = {
                 }
             });
         }
+        handlerInput.responseBuilder.speak(status.message)
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
 
         return handlerInput.responseBuilder
-            .speak(status.message)
             .reprompt(status.reprompt)
             .getResponse();
     }
@@ -272,8 +302,12 @@ const HasCactusYesIntentHandler = {
             && getProfile(handlerInput).cactus.name;
     },
     handle(handlerInput) {
+        handlerInput.responseBuilder.speak('You already have a cactus.')
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
+
         return handlerInput.responseBuilder
-            .speak('You already have a cactus.')
             .reprompt('You already have a cactus.')
             .getResponse();
     }
@@ -315,8 +349,13 @@ const HasCactusNoIntentHandler = {
             && getProfile(handlerInput).cactus.name;
     },
     handle(handlerInput) {
+        handlerInput.responseBuilder.speak("You already have a cactus that's alive and well. You water the water the cactus, or open and close the blinds. Which will it be?")
+            
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
+
         return handlerInput.responseBuilder
-            .speak("You already have a cactus that's alive and well. You water the water the cactus, or open and close the blinds. Which will it be?")
             .reprompt("You already have a cactus that's alive and well. You water the water the cactus, or open and close the blinds. Which will it be?")
             .getResponse();
     }
@@ -390,20 +429,22 @@ const ShowBadgesIntentHandler = {
         speakOutput += prompt;
         
         
-        // TODO: Ask Joe why he's calling getProfile when we already have profile.
         if(supportsHTMLInterface(handlerInput)) {
             handlerInput.responseBuilder.addDirective({
                 "type":"Alexa.Presentation.HTML.HandleMessage",
                 "message": {
                     "intent":"showBadges",
                     "playAnimation": true,
-                    "gameState": getProfile(handlerInput)
+                    "gameState": profile
                 }
             });
         }
+        handlerInput.responseBuilder.speak(speakOutput)
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
         
         return handlerInput.responseBuilder
-            .speak(speakOutput)
             .reprompt(prompt)
             .getResponse();
     }
@@ -436,9 +477,12 @@ const GetStatusIntentHandler = {
                 }
             });
         }
+        handlerInput.responseBuilder.speak(status.message)
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
         
         return handlerInput.responseBuilder
-            .speak(status.message)
             .reprompt(status.reprompt)
             .getResponse();
     }
@@ -497,9 +541,12 @@ const HasCactusOpenBlindsIntentHandler = {
                 }
             });
         }
+        handlerInput.responseBuilder.speak(speakOutput)
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
         
         return handlerInput.responseBuilder
-            .speak(speakOutput)
             .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
@@ -550,9 +597,12 @@ const HasCactusCloseBlindsIntentHandler = {
                 }
             });
         }
+        handlerInput.responseBuilder.speak(speakOutput)
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
         
         return handlerInput.responseBuilder
-            .speak(speakOutput)
             .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
@@ -594,9 +644,12 @@ const HelpIntentHandler = {
             speakOutput += "Pay close attention to their water, too. "
             speakOutput += "Over-watering is just as bad as a drought! "            
         }
+        handlerInput.responseBuilder.speak(speakOutput)
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
 
         return handlerInput.responseBuilder
-            .speak(speakOutput)
             .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
@@ -622,8 +675,12 @@ const FallbackIntentHandler = {
     },
     handle(handlerInput) {
         const speakOutput = `${SOUND_FX.ERROR} I'm not sure about that. ${FALLBACK_REPROMPT}`;
+        handlerInput.responseBuilder.speak(speakOutput)
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
+
         return handlerInput.responseBuilder
-            .speak(speakOutput)
             .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
@@ -668,9 +725,11 @@ const ErrorHandler = {
     handle(handlerInput, error) {
         console.log(`~~~~ Error handled: ${error.stack}`);
         const speakOutput = `<amazon:emotion name="disappointed" intensity="high">Aww no, The code is broken.</amazon:emotion>`;
-
+        handlerInput.responseBuilder.speak(speakOutput)
+        if(isHTMLCapableFireTV(handlerInput)) {
+            return handlerInput.responseBuilder.getResponse();
+        }
         return handlerInput.responseBuilder
-            .speak(speakOutput)
             .reprompt(speakOutput)
             .getResponse();
     }
