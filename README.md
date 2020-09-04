@@ -53,9 +53,27 @@ From the top level directory, run:
 
  git init .
 
+Then add the origin with:
+
  git remote add origin https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus.git
 
+or:
 
+ git remote add origin git@github.com:alexa/skill-sample-nodejs-web-api-my-cactus.git
+
+Set the upstream to the main branch.
+
+ git branch --set-upstream-to=origin/master 
+
+Then, you can refresh by pulling:
+
+ git pull
+
+Or, if this is aborted, you can always hard reset the branch:
+
+ git reset --hard origin/master 
+
+Now you can pull whenever you need to update your code. 
 
 ## Web Application Setup
 
