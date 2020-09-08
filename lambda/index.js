@@ -860,7 +860,7 @@ const createAdapter = function() {
         adapter = new S3Adapter.S3PersistenceAdapter({bucketName:process.env.S3_PERSISTENCE_BUCKET})
     } else {
         const localAdapter = require('./localPersistenceAdapter');
-        adapter = new localAdapter.localPersistenceAdapter({"path": "./profiles"})
+        adapter = new localAdapter.localPersistenceAdapter({"path": "./local_persistence_bucket"})
     }
     return adapter;
 }

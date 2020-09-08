@@ -1,7 +1,9 @@
 #From Alexa Hosted CLI Creation
 skill/lambda/node_modules
 .ask/
-ask-resources.json
+
+# Don't commit any local persistence files
+lambda/local_persistence_bucket/
 
 # Logs
 logs
