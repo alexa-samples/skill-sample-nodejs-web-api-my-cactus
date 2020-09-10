@@ -26,6 +26,9 @@ module.exports = {
     flushMessageQueue(queue) {
         if(queue.length <= 0) {
             return Promise.resolve("No messages in queue.");
+        } 
+        if(!alexaClient) {
+            return Promise.resolve("Alexa not initialized");
         }
         const messagePromise = new Promise((resolve, reject) => {
             alexaClient.skill.sendMessage({

@@ -32,6 +32,7 @@ var displayElementsGame = document.getElementById("onScreenHud");
 var oldBadgeObj = null;
 var badgeButtonElement = document.getElementById("badgeButton");
 var fullScreenBadgeOverlay = document.getElementById("allBadges");
+var scrollingBadgeOverlay = document.getElementById("scrollingBadge");
 var fullScreenNewBadgeOverlay = document.getElementById("newBadge");
 var canvas = document.getElementById("webGLCanvas");
 
@@ -50,13 +51,25 @@ const nightOwl = document.getElementById("nightOwl");
 
 const loadingDiv = document.getElementById("loading");
 
+let showingBadges = false;
+
 const badgeFiles = {
     helicopterParent: {fileName: "Pete_Badge-BackFromTheBrink.png", domElement: helicopterParent},
     earlyBird: {fileName: "Pete_Badge-EarlyBird.png", domElement: earlyBird},
     nightOwl: {fileName: "Pete_Badge-NightOwl.png", domElement: nightOwl}
 }
 
+const TOTAL_TIME_BADGES_SHOWN = 10000;
+
 module.exports = {
+    update(deltaTime) {
+        if(showingBadges) {
+            let moveDist = (scrollingBadgeOverlay.scrollHeight - window.innerHeight) * deltaTime / TOTAL_TIME_BADGES_SHOWN;
+            console.log(moveDist);
+            console.log(scrollingBadgeOverlay.scrollTop);
+            scrollingBadgeOverlay.scrollTop += moveDist + .5;
+        }
+    },
     hideLoadingScreen() {
         loadingDiv.style.display = "none";
         this.showStatus();
@@ -107,18 +120,21 @@ module.exports = {
         }, 10000);
     },
     showBadges() {
+        showingBadges = true;
         fullScreenNewBadgeOverlay.style.display = "none";
         fullScreenBadgeOverlay.style.display = "block";
+        
         canvas.style.display = "none";
         this.hideStatus();
 
         window.setTimeout(() => {
             this.showStatus();
             this.hideBadges();
-        }, 10000);
+        }, TOTAL_TIME_BADGES_SHOWN);
     },
     hideBadges() {
         this.showStatus();
+        showingBadges = false;
         fullScreenBadgeOverlay.style.display = "none";
         fullScreenNewBadgeOverlay.style.display = "none";
         canvas.style.display = "inline";

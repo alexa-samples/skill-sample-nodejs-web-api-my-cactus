@@ -13,6 +13,7 @@ const blinds = require('./blinds.js');
 const cactus = require('./cactus.js');
 const pail = require('./pail.js');
 const spider = require('./spider');
+const guiManager = require('./guiManager');
 
 //Debug level 2 shows camera logs in update., level 1 basic logging.
 var debugLevel = 1;
@@ -114,6 +115,7 @@ function update() {
     controls.update(); // TODO fix this later. Screen shake does not play nice.
     screenShake.update(delta * 1000); //delta time convert to millis
     messageSender.update(delta * 1000); // Update messageSender
+    guiManager.update(delta * 1000);
 
     if(debugLevel >= 1) {
         //more logging if needed
