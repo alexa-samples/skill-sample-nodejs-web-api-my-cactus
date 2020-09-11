@@ -65,9 +65,7 @@ module.exports = {
     update(deltaTime) {
         if(showingBadges) {
             let moveDist = (scrollingBadgeOverlay.scrollHeight - window.innerHeight) * deltaTime / TOTAL_TIME_BADGES_SHOWN;
-            console.log(moveDist);
-            console.log(scrollingBadgeOverlay.scrollTop);
-            scrollingBadgeOverlay.scrollTop += moveDist + .5;
+            scrollingBadgeOverlay.scrollTop += moveDist + .5; // hack. Cannot move less than 1 pixel. Add .5 so we can round up.
         }
     },
     hideLoadingScreen() {
@@ -83,9 +81,7 @@ module.exports = {
         }
     },
     showNewBadge(badgeKey, description) { // TODO debug this. not working correctly.
-        console.log("Attempting to show badge at key: " + badgeKey);
         const badgeFileName = badgeFiles[badgeKey].fileName;
-        console.log("Attempting to show badge file: " + badgeFileName);
 
         fullScreenNewBadgeOverlay.style.display = "block";
         canvas.style.display = "none";
@@ -114,7 +110,6 @@ module.exports = {
         this.hideStatus();
 
         window.setTimeout(() => {
-            console.log("remove child");
             this.showBadges();
             newBadgeImg.parentNode.removeChild(newBadgeImg);
         }, 10000);

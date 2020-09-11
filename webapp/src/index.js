@@ -183,13 +183,13 @@ function setupAlexa() {
             alexaClient.skill.onMessage((message) => {
                 if(message) {
                     debugElement.appendChild(document.createTextNode("\n" + JSON.stringify(message)));
-                    console.log("Got a message for you: " + JSON.stringify(message));
+                    messageSender.log("Got a message for you: " + JSON.stringify(message));
                 }
         
                 if(message.gameState) {
                     refreshGameState(message.gameState);
                 } else {
-                    console.error("Game state not found here is the payload: " + JSON.stringify(message));
+                    messageSender.error("Game state not found here is the payload: " + JSON.stringify(message));
                 }
         
                 console.log("Game State: " + JSON.stringify(message.gameState));
