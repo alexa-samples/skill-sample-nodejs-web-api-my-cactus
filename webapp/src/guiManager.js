@@ -1,5 +1,4 @@
 /**
- * TODO make this a GUI MAnager since it is essentially juggling parts of the HUD and canvas.
  * Badges object from backend has the form:
 "unlockedBadges": {
     "latest": "",
@@ -70,7 +69,6 @@ module.exports = {
     },
     hideLoadingScreen() {
         loadingDiv.style.display = "none";
-        this.showStatus();
     },
     refreshBadges(badgeData) {
         //DO our comparison.
@@ -123,7 +121,6 @@ module.exports = {
         this.hideStatus();
 
         window.setTimeout(() => {
-            this.showStatus();
             this.hideBadges();
         }, TOTAL_TIME_BADGES_SHOWN);
     },

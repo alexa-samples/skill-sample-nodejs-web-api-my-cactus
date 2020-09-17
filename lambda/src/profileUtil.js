@@ -30,12 +30,9 @@ const defaultCactus = function(timeZone) {
 };
 
 const defaultProfile = function (timeZone) {
-
     return {
-        cactus: defaultCactus(timeZone),
         lifeTime: {
           waterUnits: 0
-          
         },
         unlockedBadges: {
             latest: '',

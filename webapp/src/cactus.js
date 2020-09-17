@@ -32,9 +32,11 @@ module.exports = {
         if(happyDays > FLOWERING_AGE) {
             //all is visible
             cactusFlower.visible = true;
+            cactusBody.visible = true;
             cactusArmSmall.visible = true;
             cactusArmLarge.visible = true;
         } else if(happyDays > SECOND_ARM_AGE) {
+            cactusBody.visible = true;
             cactusFlower.visible = false;
             cactusArmSmall.visible = true;
             cactusArmLarge.visible = true;
@@ -42,12 +44,18 @@ module.exports = {
         } else if(happyDays > FIRST_ARM_AGE) {
             setObjScaleAndPosition(cactusBody, SECOND_ARM_AGE, FIRST_ARM_AGE);
             cactusFlower.visible = false;
+            cactusBody.visible = true;
             cactusArmSmall.visible = false;
             cactusArmLarge.visible = true;
+        } else if (happyDays < 0) {
+            cactusBody.visible = false;
+            cactusFlower.visible = false;
+            cactusArmSmall.visible = false;
+            cactusArmLarge.visible = false;
         }
     },
-    init(startInfo, debugLevel) {
-        happyDays = startInfo.daysAlive;
+    init(daysAlive, debugLevel) {
+        happyDays = daysAlive;
         this.debugLevel = debugLevel;
     },
     shouldClick(selectedObjSet) {
