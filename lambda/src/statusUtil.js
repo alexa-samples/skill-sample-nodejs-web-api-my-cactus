@@ -2,20 +2,22 @@ const isItDaylight = require('./isItDaylight');
 const moment = require('moment-timezone');
 const SOUND_FX = require('./soundFX');
 const util = require('../util');
+const ssmlUtil = require('./ssmlUtil');
 
 const WATER_THRESHOLD = 20;
 
+
 const NO_NEEDS = [
-    "is healthy.",
-    "is healthy as an ox. A very prickly ox.",
-    "is feeling healthy and strong.",
-    "is still going strong.",
-    "is feeling fit as a fiddle.",
-    "feels like a million bucks.",
-    "is feeling fresh today.",
-    "is flourishing.",
-    "is in good shape right now.",
-    "is feeling well."
+    '<amazon:emotion name="excited" intensity="medium>is healthy.</amazon:emotion>',
+    '<amazon:emotion name="excited" intensity="medium">is healthy as an ox. </amazon:emotion>A very <amazon:emotion name="disappointed" intensity="high">prickly ox.</amazon:emotion>',
+    'is feeling <amazon:emotion name="excited" intensity=\"high\">healthy and strong.</amazon:emotion>',
+    'is <amazon:emotion name="excited" intensity="medium">still going strong.</amazon:emotion>',
+    'is <amazon:emotion name="excited" intensity="medium">feeling fit as a fiddle!</amazon:emotion>',
+    'feels <amazon:emotion name="excited" intensity="high">like a million bucks!</amazon:emotion>',
+    'is feeling <prosody pitch="x-high">fresh</prosody> today! ',
+    '<amazon:emotion name="excited" intensity="high">is flourishing.</amazon:emotion>',
+    'is in <amazon:emotion name="excited" intensity="high">good shape </amazon:emotion>right now.',
+    '<amazon:emotion name="excited" intensity="high">feeling swell.</amazon:emotion></speak>'
 ];
 
 const TWO_NEEDS = [
@@ -32,42 +34,61 @@ const TWO_NEEDS = [
 ];
 
 const WISDOM_MESSAGES = [
-    "Today I did yoga in the window for 16 hours. I'm best at cactus pose.",
-    "Today a bird flew into the window. I think it meant to build a nest in me.",
-    "Today a spider made a web between my spines. I was so flattered he pricked me.",
-    "Today I meditated for 16 hours. I think there was a spike in my brain activity.",
-    "This weather we're having sure prickles my fancy.",
-    "Today I watched dogs out the window. It made me glad that I don't live near the sidewalk.",
+    
+    '<prosody rate="110%">Today I did yoga in the window for 16 hours.</prosody><break time="300ms"/> I\'m best at <break time="300ms"/><prosody volume="x-loud">cactus</prosody> pose.', 
+    '<prosody rate="110%">Today a bird flew into the window. I think it meant to build a <break time="300ms"/><prosody volume="x-loud">nest</prosody> in me.</prosody>',
+    '<prosody rate="110%">Today a spider made a web between my spines. I was so flattered he pricked me.</prosody>',
+    '<prosody rate="110%">Today I meditated for 16 hours.</prosody><break time="300ms"/> I think there was a <break time="300ms"/><prosody rate="75%">spike</prosody>in my brain activity.',
+    'This weather we’re having sure <emphasis level="moderate">prickles</emphasis> my fancy.',
+    '<prosody rate="110%">Today I watched dogs out the window. It made me <emphasis level="strong">glad</emphasis> that I don’t live near the <prosody pitch="+25%">sidewalk.</prosody></prosody>',
     "Today I watched the grass grow. Fascinating stuff, that grass.",
-    "Today I watched the neighbor mow the lawn. It was horrifying.",
-    "I'm feeling very succulent today.",
-    "I'm feeling a little prickly today.",
-    "Today I listened to the radio – I wish those talk show guys would get to the point.",
-    "Today I offered a fly a free hug. I don't know why he didn't want one.",
-    "Today I watched a cat do its business in our yard. It was yucca.",
-    "Today I sat in the sun. Tomorrow I expect I'll do the same.",
-    "Today I watched the cars go by and wondered why my pot doesn't have wheels. Then I wondered where I'd go.",
-    "Today I counted the number of pebbles in my pot. No, I haven't lost all my rocks.",
-    "Today I asked the spider living in my spines if he'd ever leaf me. He didn't get my joke. I don't think he likes me.",
-    "I just wanted to tell you that Aloe you vera much.",
-    "Today I listened to a dog bark all day. I wonder what it was so stuck on.",
-    "Today was a good day. I hope your day was plant-tastic.",
-    "I'm really enjoying this window. I think it was mint to be.",
-    "I survive on photosynthesis alone – like a moss.",
-    "Today a fly kept landing on me. I asked him to leaf me alone.",
-    "Today I watched a pizza delivery driver bring a pizza. I've never eaten pizza but it looks yucca.",
-    "Today the fire alarm went off. I tried to romaine calm.",
-    "Today I saw a firetruck come. It turned out to be no fig deal.",
-    "I'm really growing quite frond of this window.",
-    "Today I met a caterpillar. He was looking sharp.",
-    "Today I wondered what it might be like to ride a bike. I decided that would be a thorny proposition.",
-    //TODO: Replace with actual sound effect
-    "Today I ate a fly. I don't think it agreed with my stomach. <sound FX>",
-    "The cat taught me this today. It means 'I love you' <purr sound FX>",
-    "The dog taught me this today. It means go away or I'll eat you. <dog bark FX> ",
-    "The dog taught me this today. It means I'm hungry. <dog bark FX> ",
-    "When I have a thorny day, I find my happy place. Today my happy place is ... <place sound FX>",
-    "When I get sand in my spines, I find my happy place. Today my happy place is ... <place sound FX>",    
+    '<prosody rate="110%">Today I watched the <emphasis level="moderate">neighbor</emphasis></prosody> <prosody rate="100%">mow the lawn.</prosody> It was <emphasis level="moderate"><prosody volume="x-loud">horrifying.</prosody></emphasis>',
+    'I’m feeling very <emphasis level="moderate">succulent </emphasis>today.',
+    '<prosody rate="80%"> I\'m feeling a little</prosody><break time=".2s"/> <prosody pitch="+15%">prickly</prosody> today.',
+    '<prosody rate="90%">Today I listened to the radio – I wish those talk show guys would get to the</prosody><break time=".2s"/>point<break time=".2s"/> already.',
+    '<prosody rate="90%">Today I offered a fly a free hug. I don’t know why he didn’t want one.</prosody>',
+    '<prosody rate="90%"> Today I watched a cat do its business in our yard. It was</prosody><break time=".2s"/><prosody pitch="+15%">yucca</prosody>',
+    '<prosody rate="90%">Today I sat in the sun. Tomorrow I expect I’ll do the same.</prosody>',
+    '<prosody rate="90%">Today I watched the cars go by and wondered why my pot doesn\'t have wheels. Then I wondered where I\'d go.</prosody>',
+    '<prosody rate="115%">Today I counted the number of pebbles in my pot.</prosody><break time="300ms"/> No, I haven\'t lost all my <break time="150ms"/><prosody volume="x-loud">rocks.</prosody></lang>',
+    '<prosody volume="x-loud">Agahvay</prosody><break time="80ms"/> <prosody rate="115%">myself</prosody> a B+ for my cactus puns.',
+    '<prosody rate="120%">Today I asked the spider living in my spines if he’d ever</prosody><break time="300ms"/> <prosody rate="75%">leaf</prosody>me. <prosody rate="120%">He didn’t get my joke. I don’t think he likes me.</prosody>',
+    'I just wanted to tell you that <emphasis level="moderate">Aloe you vera much </emphasis>',
+    'Today I listened to a dog bark all day. I wonder what it was so <emphasis level="moderate">stuck on.</emphasis>',
+    'Today was a <prosody pitch="+40%">good day.</prosody> I hope your day was <prosody pitch="+40%">plant-tastic.</prosody>',
+    'I\'m <prosody pitch="+40%">really enjoying this window.</prosody> I think <emphasis level="moderate">it was mint</emphasis> to be.',
+    'I survive on photosynthesis alone. <emphasis level="moderate">Like a moss.</emphasis>',
+    '<prosody rate="115%">Today a fly kept landing on me. I asked him to </prosody><break time="300ms"/> <prosody rate="75%">leaf</prosody>me alone.',
+    'Today I watched a pizza delivery driver bring a pizza. I\'ve never eaten pizza but it looks <break time="300ms"/> <emphasis level="moderate">yucca.</emphasis>',
+    'Today the fire alarm went off. I tried to<break time="300ms"/> <emphasis level="moderate">row main</emphasis>calm.',
+    'Today I saw a firetruck come. It turned out to be no <break time="300ms"/> <emphasis level="strong">fig deal.</emphasis>',
+    'I\'m really growing quite  <break time="300ms"/> <emphasis level="strong">frond</emphasis> of this window.',
+    'Today I met a catapillar. He was looking <break time="300ms"/><emphasis level="strong">Sharp.</emphasis>',
+    'Today I wondered what it might be like to ride a bike. I decided that would be a  <break time="300ms"/> <emphasis level="strong">thorny </emphasis>proposition.',
+    // TODO: Refactor 
+    `<prosody rate="90%">The cat taught me this today. It means \'I love you\'.</prosody> ${SOUND_FX.CAT_PURR}`,
+    `<prosody rate="90%">The dog taught me this today. It means go away or I’ll eat you. </prosody> ${SOUND_FX.DOG_BARK_TWICE} ${SOUND_FX.DOG_GROWL}`,
+    `<prosody rate="90%">The dog taught me this today. It means I’m hungry. </prosody> ${SOUND_FX.DOG_BARK_ONCE}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.OCEAN_WAVE_SURF}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.BIRD_FOREST_01} ${SOUND_FX.BIRD_FOREST_02}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.HORROR}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.SNOWMOBILE}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.MUSICAL_DRONE}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.BASKETBALL}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.FOOTBALL}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.CAR_ACCELERATE}`,
+    `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.TOILET_FLUSH}`,
+    `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.GAME_SHOW}`,
+    `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.CHRISTMAS_01} ${SOUND_FX.CHRISTMAS_02}`,
+    `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.FIREPLACE_CRACKLE}`,
+    `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.FAIRY_MELODIC_CHIMES}`,
+    `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.CROWDS}`,
+    `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.FISHING_POLE_07} ${SOUND_FX.FISHING_POLE_05}`,
+    `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.THUNDER}`,
+    
+    // TODO Get ssml for this message
+    // "Today I ate a fly. I don't think it agreed with my stomach. <sound FX>",
+
 ];
 
 const getNeeds = function(profile) {
@@ -99,8 +120,6 @@ const getStatus = function(profile) {
         needs: needs
     };
 
-
-
     let statusMessage;
     let prompt = "";
     // Determined that the cactus is dead.
@@ -125,12 +144,12 @@ const getStatus = function(profile) {
         statusMessage = `${SOUND_FX.DEATH_TONE} ${getDeathNote(profile.cactus.name, causeOfDeath)} `;
         prompt = "Want to start over with a new cactus?";
     }
-    // otherwise it has needs
+    // otherwise it is either healthy or has needs
     else {
         
         if (!needs.water && !needs.comfort) {
-            prompt = util.getRandomItemFromList(WISDOM_MESSAGES);
-            statusMessage = `${profile.cactus.name} ${util.getRandomItemFromList(NO_NEEDS)} ${util.getRandomItemFromList(WISDOM_MESSAGES)}`;        
+            const wisdom = ssmlUtil.wrapCactusVoice(profile, util.getRandomItemFromList(WISDOM_MESSAGES));
+            statusMessage = `${profile.cactus.name} ${util.getRandomItemFromList(NO_NEEDS)}  ${wisdom}`;
         } else if (needs.water || needs.comfort) {
             
             // TODO: move this to API gateway and make sure that the items are not global 
@@ -254,7 +273,6 @@ const computeStatus = function(profile, latestInteraction, timeZone) {
         }
     }
 
-    // console.log('final health level', cactus.healthLevel);
     // console.log('cactus age',cactus.daysAlive);
     return cactus;
 };
