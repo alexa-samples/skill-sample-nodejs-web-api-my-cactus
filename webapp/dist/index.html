@@ -21,7 +21,7 @@
                 z-index: 100;
                 display:block;
             }
-            .scrollingBadge {
+            .scrolling {
                 position: absolute;
                 height: 100vh;
                 overflow: scroll;
@@ -32,6 +32,9 @@
                 width: 100%;
                 height: 100%;
                 display: none;
+            }
+            #scrollingBadge {
+                background-image: url("./assets/source-art/badges/Pete_Background-All.png");
             }
             #info { 
                 width: 100%;
@@ -76,7 +79,7 @@
                 <img class="fullscreen" src="./assets/source-art/Pete_FullComp.png" id="backFromTheBrink"/>
             </div>
             <div id="allBadges" class="hud badgeOverlay">
-                <div class="scrollingBadge">
+                <div class="scrolling" id="scrollingBadge">
                     <img src="./assets/source-art/badges/Off/Pete_Badge-BackFromTheBrink.png" id="backFromTheBrink"/>
                     <img src="./assets/source-art/badges/Off/Pete_Badge-EarlyBird.png" id="earlyBird"/>
                     <img src="./assets/source-art/badges/Off/Pete_Badge-GreenThumb.png" id="greenThumb"/>
@@ -84,7 +87,6 @@
                     <img src="./assets/source-art/badges/Off/Pete_Badge-NewParent.png" id="newParent"/>
                     <img src="./assets/source-art/badges/Off/Pete_Badge-NightOwl.png" id="nightOwl"/>
                 </div>
-                <img src="./assets/source-art/badges/Pete_Background-All.png" id="badgeBackground"/>
             </div>
             <div id="newBadge" class="hud badgeOverlay">
                 <img src="./assets/source-art/badges/Pete_Background-Badge.png" id="badgeBackground"/>
