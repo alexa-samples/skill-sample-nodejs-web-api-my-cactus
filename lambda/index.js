@@ -18,6 +18,10 @@ const SOUND_FX = require('./src/soundFX');
 
 // Bug Bash
 
+// Fix edge condition on prompt when there are no needs.
+// HasCactusOpenBlindsIntentHandler
+// HasCactusCloseBlindsIntentHandler
+
 //TODO change this URL to your publicly accessible HTTPS endpoint.
 const webAppBaseURL = `https://${process.env.Domain}`;
 
@@ -132,13 +136,11 @@ const HasCactusLaunchRequestHandler = {
         conditionallyLaunchWebApp(handlerInput);
         handlerInput.responseBuilder.speak(status.message);
         
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
+        if(!isHTMLCapableFireTV(handlerInput) && status.reprompt !== '') {
+            handlerInput.responseBuilder.reprompt(status.reprompt)    
         }
 
-        return handlerInput.responseBuilder
-            .reprompt(status.reprompt)
-            .getResponse();
+        return handlerInput.responseBuilder.getResponse();            
     }
 };
 
@@ -242,6 +244,21 @@ const CaptureDestinationHandler = {
     }
 };
 
+// TODO: refactor and move to a different file - does this belong in the status util? 
+// Maybe we need an action util?
+const DRINK_MESSAGES = [
+    '<emphasis level="strong">Ah!</emphasis> That’s <prosody pitch="high">refreshing!</prosody>',
+    '<prosody rate="90%">That <prosody pitch="+20%">water</prosody> is <prosody pitch="+20%">refreshing</prosody> stuff.</prosody>',
+    '<prosody rate="90%"><prosody pitch="+20%">Ah!</prosody> That hit the <prosody pitch="+20%">Spot!</prosody></prosody>',
+    '<prosody rate="90%"><prosody pitch="+20%">Thanks. </prosody>I\'m feeling like a fish in <prosody pitch="+20%">water again!</prosody></prosody>',
+    '<prosody rate="90%">It’s good to <prosody pitch="+20%">feel wet </prosody>behind <prosody pitch="+20%">my ears again!</prosody></prosody>',
+    '<prosody rate="90%"><prosody pitch="+20%">Ah!</prosody> Even <prosody pitch="+20%">cacti</prosody></prosody> need <prosody pitch="+20%"> a shower</prosody> sometimes.',
+    '<prosody rate="90%"><prosody pitch="+20%">Thank you!</prosody> I feel <prosody pitch="+20%">quenched</prosody></prosody> now!',
+    '<prosody rate="90%">Those <prosody pitch="+20%">showers sure beat </prosody> flash floods <prosody pitch="+20%"> on the prairie!</prosody></prosody>',
+    '<prosody rate="90%">Even a <prosody pitch="+20%">cactus</prosody> needs a<prosody pitch="+20%"> drink sometimes! Thanks pal!</prosody></prosody>',
+    '<prosody rate="90%">I feel like an <prosody pitch="+20%">oasis</prosody> in a<prosody pitch="+20%"> desert now! Thank you!</prosody></prosody>'
+];
+
 const WaterCactusIntentHandler = {
     canHandle(handlerInput) { // Check for existence of HTML Message OR an intent Request and perform the same actions.
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -254,11 +271,12 @@ const WaterCactusIntentHandler = {
         
         profile.cactus.waterLevel += WATER_INCREMENT;
         profile.lifeTime.waterUnits += WATER_INCREMENT;
-        
-        let speakOutput = `${SOUND_FX.WATER} ${SOUND_FX.SLURP} Thanks. I'm feeling like a fish in water again.`;
+    
+        let speakOutput = `${SOUND_FX.WATER} ${SOUND_FX.SLURP} `;
 
         const status = statusUtil.getStatus(profile);
 
+        //TODO: think about a different drink sound effect when the cactus is overwatered
         //TODO: talk with Alison about warning messages about over watering 
         //TODO: figure out max waterLevel based upon cactus size (no hardcoding to 20)
         if (!status.alive) {
@@ -270,6 +288,10 @@ const WaterCactusIntentHandler = {
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);               
             // TODO: investigate what to do about latestInteraction
+
+            speakOutput += status.message;
+        } else {
+            speakOutput += ssmlUtil.wrapCactusVoice(profile, util.getRandomItemFromList(DRINK_MESSAGES));
         }
         
         const attributesManager = handlerInput.attributesManager;
@@ -287,6 +309,7 @@ const WaterCactusIntentHandler = {
                 }
             });
         }
+                                           
         handlerInput.responseBuilder.speak(speakOutput);
         if(isHTMLCapableFireTV(handlerInput)) {
             return handlerInput.responseBuilder.getResponse();
@@ -509,6 +532,14 @@ const OpenBlindsIntentHandler = {
     }
 };
 
+const OPEN_BLINDS_MESSAGES = [
+    '<prosody rate="90%">Let there be <prosody pitch="+20%">light!</prosody></prosody>',
+    '<prosody rate="90%">Hello<prosody pitch="+20%"> sun shine!</prosody></prosody>',
+    '<prosody rate="90%">Thanks for being my <prosody pitch="+20%">sun shine!</prosody></prosody>',
+    '<prosody rate="90%">Ah. Sweet <prosody pitch="+20%">warmth!</prosody></prosody>. Thank you.',
+    '<prosody rate="90%">I better get my <prosody pitch="+20%">sunglasses!</prosody></prosody>', 
+];
+
 const HasCactusOpenBlindsIntentHandler = {
     canHandle(handlerInput) {
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -519,13 +550,13 @@ const HasCactusOpenBlindsIntentHandler = {
     },
     handle(handlerInput) {
         
-        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already open.`;
+        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already open. `;
         
         const profile = getProfile(handlerInput);
         
         if (profile.cactus.blindState !== 'open') {
             
-            speakOutput = `${SOUND_FX.SHORT_CHIME} I better get my sunglasses`;
+            speakOutput = `${SOUND_FX.SHORT_CHIME} ${SOUND_FX.BIRD_FOREST_02} ${util.getRandomItemFromList(OPEN_BLINDS_MESSAGES)} `;
             
             profile.cactus.blindState = "open";    
             
@@ -535,6 +566,10 @@ const HasCactusOpenBlindsIntentHandler = {
         
             attributesManager.setSessionAttributes(profile);            
         }
+
+        const status = statusUtil.getStatus(profile);
+
+        speakOutput += status.message;
         
         if(supportsHTMLInterface(handlerInput)) {
             handlerInput.responseBuilder.addDirective({
@@ -551,6 +586,7 @@ const HasCactusOpenBlindsIntentHandler = {
             return handlerInput.responseBuilder.getResponse();
         }
         
+        // TODO: investigate if we should use a different reprompt string 
         return handlerInput.responseBuilder
             .reprompt(FALLBACK_REPROMPT)
             .getResponse();
@@ -567,6 +603,14 @@ const CloseBlindsIntentHandler = {
     }
 };
 
+const CLOSE_BLINDS_MESSAGES = [
+    '<prosody pitch="high">Hey! </prosody><prosody rate="115%"><prosody pitch="x-high">who</prosody> turned out <emphasis level="strong">all</emphasis> the <prosody pitch="high">lights?</prosody></prosody>',
+    '<prosody rate="90%">I guess it\'s time to <prosody pitch="+20%">go to bed.</prosody> Now if only I had a <prosody pitch="+20%">pillow.</prosody></prosody>',
+    'Did it get dark in here suddenly?',
+    '<prosody rate="90%">I guess the <prosody pitch="+20%">sun</prosody> will come out <prosody pitch="+20%">tomorrow!</prosody></prosody>',
+    '<prosody rate="90%">Well it\'s no scenic <prosody pitch="+20%">sunset,</prosody>but I guess that<prosody pitch="+20%">works too!</prosody></prosody>'
+];
+
 const HasCactusCloseBlindsIntentHandler = {
     canHandle(handlerInput) {
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -577,12 +621,12 @@ const HasCactusCloseBlindsIntentHandler = {
     },
     handle(handlerInput) {
         
-        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already closed.`;
+        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already closed. `;
         
         const profile = getProfile(handlerInput);
         
         if (profile.cactus.blindState !== "closed") {
-            speakOutput = `${SOUND_FX.SHORT_CHIME} Hey who turned out all the lights?`;
+            speakOutput = `${SOUND_FX.SHORT_CHIME} ${util.getRandomItemFromList(CLOSE_BLINDS_MESSAGES)} `;
         
             profile.cactus.blindState = "closed";
             
@@ -591,6 +635,10 @@ const HasCactusCloseBlindsIntentHandler = {
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);            
         }
+
+        const status = statusUtil.getStatus(profile);
+
+        speakOutput += status.message;
         
         if(supportsHTMLInterface(handlerInput)) {
             handlerInput.responseBuilder.addDirective({
@@ -631,15 +679,13 @@ const HelpIntentHandler = {
     },
     handle(handlerInput) {
 
-        // TODO: Ask Alison for a better message for the case where they ask for
-        // help before the cactus has been created.
         let speakOutput = "This is my cactus. A cactus raising simulation game. ";
-
-        speakOutput = "I have lots of cacti in need of care! ";
-        speakOutput += "To match you with the right one for you to raise as your own, though, ";
-        speakOutput += "I’ll need to know a bit about you. ";
-        speakOutput += "If you could go anywhere in the world, where would you visit? ";
-
+        speakOutput += "I have lots of cacti in need of care! To match you ";
+        speakOutput += "with the right one for you to raise as your own though, ";
+        speakOutput += "I’ll need to know a bit about you. If you could go ";
+        speakOutput += "anywhere in the world, <prosody volume=\"x-loud\">where ";
+        speakOutput += "would you visit?</prosody>";
+        
         const profile = getProfile(handlerInput);
 
         if (profile.cactus) {
@@ -649,7 +695,7 @@ const HelpIntentHandler = {
             speakOutput += "Pay close attention to their water, too. "
             speakOutput += "Over-watering is just as bad as a drought! "            
         }
-        handlerInput.responseBuilder.speak(speakOutput)
+        handlerInput.responseBuilder.speak(ssmlWrapDomain(speakOutput));
         if(isHTMLCapableFireTV(handlerInput)) {
             return handlerInput.responseBuilder.getResponse();
         }
@@ -827,6 +873,7 @@ const getRandomName = async function() {
 }
 
 const https = require('https');
+const ssmlUtil = require('./src/ssmlUtil.js');
 
 function getHTTP(options) {
   return new Promise(((resolve, reject) => {
