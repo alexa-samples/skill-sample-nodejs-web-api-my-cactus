@@ -194,7 +194,7 @@ function setupAlexa() {
                 }
         
                 console.log("Game State: " + JSON.stringify(message.gameState));
-                if(message.gameState.newBadge) {
+                if(message.gameState.unlockedBadges && message.gameState.unlockedBadges.newBadge) {
                     console.log("Showing new badge");
                     windowManager.showNewBadge(message.gameState.unlockedBadges.latestKey, message.gameState.unlockedBadges.latest);
                 }
