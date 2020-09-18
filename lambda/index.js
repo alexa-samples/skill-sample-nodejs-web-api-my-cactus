@@ -263,6 +263,7 @@ const WaterCactusIntentHandler = {
         //TODO: figure out max waterLevel based upon cactus size (no hardcoding to 20)
         if (!status.alive) {
             profile = profileUtil.cleanUpCactus(profile);
+            speakOutput = status.message;
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
@@ -286,7 +287,7 @@ const WaterCactusIntentHandler = {
                 }
             });
         }
-        handlerInput.responseBuilder.speak(status.message)
+        handlerInput.responseBuilder.speak(speakOutput);
         if(isHTMLCapableFireTV(handlerInput)) {
             return handlerInput.responseBuilder.getResponse();
         }
@@ -375,6 +376,8 @@ const WebAppCloudLogger = {
         const {
             messageQueue
         } = handlerInput.requestEnvelope.request.message;
+        console.log("WebAppCloudLogger request: " + JSON.stringify(handlerInput.requestEnvelope.request));
+
         messageQueue.forEach(message => {
             const {
                 level,
@@ -725,7 +728,7 @@ const ErrorHandler = {
         return true;
     },
     handle(handlerInput, error) {
-        console.log(`~~~~ Error handled: ${error.stack}`);
+        console.error(`~~~~ Error handled: ${error.stack}`);
         const speakOutput = `<amazon:emotion name="disappointed" intensity="high">Aww no, The code is broken.</amazon:emotion>`;
         handlerInput.responseBuilder.speak(speakOutput)
         if(isHTMLCapableFireTV(handlerInput)) {
@@ -779,7 +782,7 @@ const LoadProfileRequestInterceptor = {
         // If no profile initiate a new one - first interaction with skill
         if(!profile.hasOwnProperty("lifeTime")) {
             profile = profileUtil.defaultProfile()
-        } else if (profile.hasOwnProperty("cactus")) { // Check if there is a cactus before compute status
+        } else if (profile.cactus) { // Check if there is a cactus before compute status
             profile.cactus = statusUtil.computeStatus(profile, moment(), timeZone);
             badgeUtil.evaluate(profile, moment());
         }
