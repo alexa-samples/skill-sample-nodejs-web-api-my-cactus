@@ -1,7 +1,8 @@
 const THREE = require('three');
 const moment = require('moment-timezone');
 const GLTFLoader = require('three/examples/jsm/loaders/GLTFLoader');
-const OrbitControls = require('three/examples/jsm/controls/OrbitControls');
+const OrbitControls = require('./threejsForks/OrbitControlsFork');
+//require('three/examples/jsm/controls/OrbitControls');
 
 const selector = require('./selector');
 const screenShake = require('./screenShake');
@@ -15,6 +16,8 @@ const cactus = require('./cactus.js');
 const pail = require('./pail.js');
 const spider = require('./spider');
 const guiManager = require('./guiManager');
+
+const LOCKED_ANGLE = 60 * Math.PI / 180;
 
 //Debug level 2 shows camera logs in update., level 1 basic logging.
 var debugLevel = 1;
@@ -114,6 +117,7 @@ function update() {
     }
 
     controls.update(); // TODO fix this later. Screen shake does not play nice.
+
     screenShake.update(delta * 1000); //delta time convert to millis
     messageSender.update(delta * 1000); // Update messageSender
     guiManager.update(delta * 1000);
@@ -292,7 +296,6 @@ function init() {
     if(!fullControls) {
         controls.enableKeys = false;
         controls.enableZoom = false;
-        const LOCKED_ANGLE = 60 * Math.PI / 180;
         controls.maxPolarAngle = LOCKED_ANGLE;
         controls.minPolarAngle = LOCKED_ANGLE;
         controls.maxAzimuthAngle = 45 * Math.PI / 180;
@@ -594,14 +597,20 @@ function onClickOrTouch(screenX, screenY) {
     // selector.selectClickables(screenVector, clickableObjects, camera);
 }
 
+
+
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
     if (keyCode == 88) { // x
         camera.position.z *= 2;
     } else if (keyCode == 90) { // z
         camera.position.z *= .5;
+    } else if (keyCode == 37) { // Left arrow / fireTV left
+        controls.rotateLeft(-1);
     } else if (keyCode == 38) { // Up arrow / fireTV remote up
-        0
+        
+    } else if (keyCode == 39) { // Right arrow / fireTV remote right
+        controls.rotateLeft(1,0);
     } else if (keyCode == 40) { // Down Arrow / fireTV remote down
         
     } //FireTV Codes: https://developer.amazon.com/docs/fire-tv/supporting-controllers-in-web-apps.html#usinginput
