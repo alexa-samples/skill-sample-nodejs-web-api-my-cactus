@@ -8,16 +8,25 @@ const WATER_THRESHOLD = 20;
 
 
 const NO_NEEDS = [
-    '<amazon:emotion name="excited" intensity="medium>is healthy.</amazon:emotion>',
+    '<amazon:emotion name="excited" intensity="medium">is healthy.</amazon:emotion>',
     '<amazon:emotion name="excited" intensity="medium">is healthy as an ox. </amazon:emotion>A very <amazon:emotion name="disappointed" intensity="high">prickly ox.</amazon:emotion>',
-    'is feeling <amazon:emotion name="excited" intensity=\"high\">healthy and strong.</amazon:emotion>',
+    'is feeling <amazon:emotion name="excited" intensity="high">healthy and strong.</amazon:emotion>',
     'is <amazon:emotion name="excited" intensity="medium">still going strong.</amazon:emotion>',
     'is <amazon:emotion name="excited" intensity="medium">feeling fit as a fiddle!</amazon:emotion>',
     'feels <amazon:emotion name="excited" intensity="high">like a million bucks!</amazon:emotion>',
     'is feeling <prosody pitch="x-high">fresh</prosody> today! ',
     '<amazon:emotion name="excited" intensity="high">is flourishing.</amazon:emotion>',
     'is in <amazon:emotion name="excited" intensity="high">good shape </amazon:emotion>right now.',
-    '<amazon:emotion name="excited" intensity="high">feeling swell.</amazon:emotion></speak>'
+    'is <amazon:emotion name="excited" intensity="high">feeling swell.</amazon:emotion>.'
+];
+
+const NO_NEEDS_PROMPTS = [
+    '<prosody rate="105%">I have everything I need <prosody pitch="+33%">right here</prosody> for now.</prosody>.',
+    '<prosody rate="105%">I have everything I need <prosody pitch="+33%">right here.</prosody>Check back later.</prosody>.',
+    '<prosody rate="105%">All is well in this pot.<prosody pitch="+33%">Thanks for checking!</prosody></prosody>',
+    '<prosody rate="105%">I\'m in potted <prosody pitch="high">paradise.</prosody><prosody pitch="+33%">No complaints for now!</prosody></prosody>',
+    '<prosody rate="105%"><prosody pitch="+20%">I don\'t have any complaints right now.</prosody><prosody pitch="high">Thanks for asking!</prosody></prosody>',
+    '<prosody rate="105%"><prosody pitch="+20%">I don\'t need anything right now,</prosody><prosody pitch="high">thank you!</prosody></prosody>',
 ];
 
 const TWO_NEEDS = [
@@ -58,25 +67,25 @@ const WISDOM_MESSAGES = [
     'Today was a <prosody pitch="+40%">good day.</prosody> I hope your day was <prosody pitch="+40%">plant-tastic.</prosody>',
     'I\'m <prosody pitch="+40%">really enjoying this window.</prosody> I think <emphasis level="moderate">it was mint</emphasis> to be.',
     'I survive on photosynthesis alone. <emphasis level="moderate">Like a moss.</emphasis>',
-    '<prosody rate="115%">Today a fly kept landing on me. I asked him to </prosody><break time="300ms"/> <prosody rate="75%">leaf</prosody>me alone.',
+    '<prosody rate="115%">Today a fly kept landing on me. I asked him to </prosody><break time="300ms"/> <prosody rate="75%">leaf</prosody>me alone.',
     'Today I watched a pizza delivery driver bring a pizza. I\'ve never eaten pizza but it looks <break time="300ms"/> <emphasis level="moderate">yucca.</emphasis>',
     'Today the fire alarm went off. I tried to<break time="300ms"/> <emphasis level="moderate">row main</emphasis>calm.',
     'Today I saw a firetruck come. It turned out to be no <break time="300ms"/> <emphasis level="strong">fig deal.</emphasis>',
-    'I\'m really growing quite  <break time="300ms"/> <emphasis level="strong">frond</emphasis> of this window.',
+    'I\'m really growing quite <break time="300ms"/> <emphasis level="strong">frond</emphasis> of this window.',
     'Today I met a catapillar. He was looking <break time="300ms"/><emphasis level="strong">Sharp.</emphasis>',
-    'Today I wondered what it might be like to ride a bike. I decided that would be a  <break time="300ms"/> <emphasis level="strong">thorny </emphasis>proposition.',
+    'Today I wondered what it might be like to ride a bike. I decided that would be a <break time="300ms"/> <emphasis level="strong">thorny </emphasis>proposition.',
     // TODO: Refactor 
     `<prosody rate="90%">The cat taught me this today. It means \'I love you\'.</prosody> ${SOUND_FX.CAT_PURR}`,
     `<prosody rate="90%">The dog taught me this today. It means go away or I’ll eat you. </prosody> ${SOUND_FX.DOG_BARK_TWICE} ${SOUND_FX.DOG_GROWL}`,
     `<prosody rate="90%">The dog taught me this today. It means I’m hungry. </prosody> ${SOUND_FX.DOG_BARK_ONCE}`,
-    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.OCEAN_WAVE_SURF}`,
-    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.BIRD_FOREST_01} ${SOUND_FX.BIRD_FOREST_02}`,
-    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.HORROR}`,
-    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.SNOWMOBILE}`,
-    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.MUSICAL_DRONE}`,
-    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.BASKETBALL}`,
-    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.FOOTBALL}`,
-    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.CAR_ACCELERATE}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.OCEAN_WAVE_SURF}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.BIRD_FOREST_01} ${SOUND_FX.BIRD_FOREST_02}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.HORROR}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.SNOWMOBILE}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.MUSICAL_DRONE}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.BASKETBALL}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.FOOTBALL}`,
+    `<prosody rate="90%">When I have a<prosody volume="x-loud"> thorny</prosody> day, I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.CAR_ACCELERATE}`,
     `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.TOILET_FLUSH}`,
     `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.GAME_SHOW}`,
     `<prosody rate="90%">When I get sand in my <prosody volume="x-loud"> spines,</prosody> I find my <prosody pitch="high">happy</prosody> place. Today my happy place is … </prosody> ${SOUND_FX.CHRISTMAS_01} ${SOUND_FX.CHRISTMAS_02}`,
@@ -144,13 +153,15 @@ const getStatus = function(profile) {
         statusMessage = `${SOUND_FX.DEATH_TONE} ${getDeathNote(profile.cactus.name, causeOfDeath)} `;
         prompt = "Want to start over with a new cactus?";
     }
-    // otherwise it is either healthy or has needs
+    // has no needs
+    else if (!needs.water && !needs.comfort) { // has no needs
+        const wisdom = ssmlUtil.wrapCactusVoice(profile, util.getRandomItemFromList(WISDOM_MESSAGES));
+        statusMessage = `${profile.cactus.name} ${util.getRandomItemFromList(NO_NEEDS)} ${wisdom}`;
+        prompt =  ssmlUtil.wrapCactusVoice(profile, util.getRandomItemFromList(NO_NEEDS_PROMPTS));
+    }
+    // else it has needs
     else {
-        
-        if (!needs.water && !needs.comfort) {
-            const wisdom = ssmlUtil.wrapCactusVoice(profile, util.getRandomItemFromList(WISDOM_MESSAGES));
-            statusMessage = `${profile.cactus.name} ${util.getRandomItemFromList(NO_NEEDS)}  ${wisdom}`;
-        } else if (needs.water || needs.comfort) {
+        if (needs.water || needs.comfort) { // has one need
             
             // TODO: move this to API gateway and make sure that the items are not global 
             const ONE_NEED = [
@@ -168,7 +179,7 @@ const getStatus = function(profile) {
             
             statusMessage = util.getRandomItemFromList(ONE_NEED);
             
-        } else {
+        } else { // has two needs
             
             statusMessage = `${profile.cactus.name} ${util.getRandomItemFromList(TWO_NEEDS)}`;
         }
