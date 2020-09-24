@@ -14,13 +14,10 @@ const SOUND_FX = require('./src/soundFX');
 
 // BIG TODOS:
 
+// 0. Fix prompt after watering cactus - no prompt = cert failure
 // 1. SSML additions 
 
 // Bug Bash
-
-// Fix edge condition on prompt when there are no needs.
-// HasCactusOpenBlindsIntentHandler
-// HasCactusCloseBlindsIntentHandler
 
 //TODO change this URL to your publicly accessible HTTPS endpoint.
 const webAppBaseURL = `https://${process.env.Domain}`;
@@ -132,12 +129,14 @@ const HasCactusLaunchRequestHandler = {
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);   
         }
+
+        const prompt = " You can open or close the blinds, water the cactus, check it's status, or check your badges. What would you like to do?"
         
         conditionallyLaunchWebApp(handlerInput);
-        handlerInput.responseBuilder.speak(status.message);
+        handlerInput.responseBuilder.speak(status.message + prompt);
         
         if(!isHTMLCapableFireTV(handlerInput) && status.reprompt !== '') {
-            handlerInput.responseBuilder.reprompt(status.reprompt)    
+            handlerInput.responseBuilder.reprompt(status.reprompt + prompt)    
         }
 
         return handlerInput.responseBuilder.getResponse();            
@@ -309,15 +308,18 @@ const WaterCactusIntentHandler = {
                 }
             });
         }
-                                           
-        handlerInput.responseBuilder.speak(speakOutput);
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
-        }
 
-        return handlerInput.responseBuilder
-            .reprompt(status.reprompt)
-            .getResponse();
+        handlerInput.responseBuilder.speak(speakOutput)
+
+        if(!isHTMLCapableFireTV(handlerInput)) {
+            if ( !status.alive || status.needs.water || status.needs.comfort) {
+                handlerInput.responseBuilder.reprompt(status.reprompt);
+            } else {
+                handlerInput.responseBuilder.withShouldEndSession(true);
+            }
+        }
+        
+        return handlerInput.responseBuilder.getResponse();
     }
 }
 
@@ -505,14 +507,18 @@ const GetStatusIntentHandler = {
                 }
             });
         }
+
         handlerInput.responseBuilder.speak(status.message)
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
+
+        if(!isHTMLCapableFireTV(handlerInput)) {
+            if ( !status.alive || status.needs.water || status.needs.comfort) {
+                handlerInput.responseBuilder.reprompt(status.reprompt);
+            } else {
+                handlerInput.responseBuilder.withShouldEndSession(true);
+            }
         }
         
-        return handlerInput.responseBuilder
-            .reprompt(status.reprompt)
-            .getResponse();
+        return handlerInput.responseBuilder.getResponse();
     }
 };
 
@@ -581,16 +587,30 @@ const HasCactusOpenBlindsIntentHandler = {
                 }
             });
         }
+
         handlerInput.responseBuilder.speak(speakOutput)
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
+
+        if(!isHTMLCapableFireTV(handlerInput)) {
+            if ( !status.alive || status.needs.water || status.needs.comfort) {
+                handlerInput.responseBuilder.reprompt(status.reprompt);
+            } else {
+                handlerInput.responseBuilder.withShouldEndSession(true);
+            }
         }
-        
-        // TODO: investigate if we should use a different reprompt string 
-        return handlerInput.responseBuilder
-            .reprompt(FALLBACK_REPROMPT)
-            .getResponse();
+
+        return handlerInput.responseBuilder.getResponse();
     }
+
+    //     handlerInput.responseBuilder.speak(speakOutput)
+    //     if(isHTMLCapableFireTV(handlerInput)) {
+    //         return handlerInput.responseBuilder.getResponse();
+    //     }
+        
+    //     // TODO: investigate if we should use a different reprompt string 
+    //     return handlerInput.responseBuilder
+    //         .reprompt(FALLBACK_REPROMPT)
+    //         .getResponse();
+    // }
 }
 
 const CloseBlindsIntentHandler = {
@@ -650,13 +670,17 @@ const HasCactusCloseBlindsIntentHandler = {
                 }
             });
         }
+
         handlerInput.responseBuilder.speak(speakOutput)
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
+
+        if(!isHTMLCapableFireTV(handlerInput)) {
+            if ( !status.alive || status.needs.water || status.needs.comfort) {
+                handlerInput.responseBuilder.reprompt(status.reprompt);
+            } else {
+                handlerInput.responseBuilder.withShouldEndSession(true);
+            }
         }
-        
         return handlerInput.responseBuilder
-            .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
 }
@@ -853,6 +877,12 @@ const UpdateLatestInteractionResponseInterceptor = {
     }
 }
 
+const logResponseJsonResponseInterceptor = {
+    process(handlerInput) {
+        console.log("Response JSON:", JSON.stringify(handlerInput.responseBuilder.getResponse()));
+    }
+};
+
 // "YYYY-MM-DD HH:mm:ss"
 
 const getNameUrl = "https://5d3pod58ac.execute-api.us-east-1.amazonaws.com/stage/getName";
@@ -948,7 +978,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         NewSessionRequestInterceptor
     )
     .addResponseInterceptors(
-        UpdateLatestInteractionResponseInterceptor
+        UpdateLatestInteractionResponseInterceptor,
+        logResponseJsonResponseInterceptor
     )
     .addErrorHandlers(
         ErrorHandler,
