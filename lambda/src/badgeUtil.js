@@ -6,32 +6,33 @@ const HELICOPTER_THRESHOLD = 5;
 const evaluate = function(profile, currentTime) {
 
     const unlockedBadges = profile.unlockedBadges;
-    profile.newBadge = false;// Currently one turn behind since this is run in the request interceptor.
-
+    unlockedBadges.newBadge = false;// Currently one turn behind since this is run in the request interceptor.
+    unlockedBadges.latestKey = null;
+    
     const waterUnits = profile.lifeTime.waterUnits;
     const waterThreshold = Math.pow(2, unlockedBadges.waterUnits.length) * 100;    
 
     if(waterUnits > 99 && waterUnits >= waterThreshold) {
         // update the badges
         unlockedBadges.waterUnits.push(waterUnits);
-        profile.unlockedBadges.latest = `Lifetime water units for giving your cactus over ${waterThreshold} units of water.`;
+        unlockedBadges.latest = `Lifetime water units for giving your cactus over ${waterThreshold} units of water.`;
     }
 
     // early bird badge rules check
     if(currentTime.hour() >= 4 && currentTime.hour() <= 7) {
         if(!unlockedBadges.earlyBird) {
-            profile.unlockedBadges.latestKey = "earlyBird";
-            profile.newBadge = true;
+            unlockedBadges.latestKey = "earlyBird";
+            unlockedBadges.newBadge = true;
         }
         unlockedBadges.earlyBird = true;
         unlockedBadges.latest = 'The early badge for checking your cactus between the hours of 4 to 7 am.';
     }
 
     // night owl badge rules check
-    if(currentTime.hour() == 0 && (currentTime.hour() <= 3 && currentTime.minutes()) <= 59 ) {
+    if(currentTime.hour() >= 0 && (currentTime.hour() <= 3 && currentTime.minutes() <= 59 )) {
         if(!unlockedBadges.nightOwl) {
-            profile.unlockedBadges.latestKey = "nightOwl";
-            profile.newBadge = true;
+            unlockedBadges.latestKey = "nightOwl";
+            unlockedBadges.newBadge = true;
         }
         unlockedBadges.nightOwl = true;
         unlockedBadges.latest = 'The night owl badge for check your cactus from midnight to 3 am.';
@@ -66,8 +67,8 @@ const evaluate = function(profile, currentTime) {
     //helicopter parent
     if (!unlockedBadges.helicopterParent && profile.timesChecked >= HELICOPTER_THRESHOLD) {
         if(!unlockedBadges.helicopterParent) {
-            profile.unlockedBadges.latestKey = "helicopterParent";
-            profile.newBadge = true;
+            unlockedBadges.latestKey = "helicopterParent";
+            unlockedBadges.newBadge = true;
         }
         unlockedBadges.helicopterParent = true;
         unlockedBadges.latest = `For hovering over your cactus like a helicopter parent by checking on your cactus ${HELICOPTER_THRESHOLD} times in one day.`

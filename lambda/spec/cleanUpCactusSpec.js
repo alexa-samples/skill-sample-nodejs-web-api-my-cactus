@@ -7,9 +7,7 @@ describe('cleanUpCactus', function() {
         const result = profileUtil.cleanUpCactus(profile);
 
         // checking the default cactus values
-        expect(result.cactus.waterLevel).toBe(5);
-        expect(result.cactus.healthLevel).toBe(100);
-        expect(result.cactus.daysAlive).toBe(0);
+        expect(result.cactus).toBe(null);
 
         expect(result.timesChecked).toBe(1);
 

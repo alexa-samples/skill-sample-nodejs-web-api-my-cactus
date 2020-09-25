@@ -37,6 +37,23 @@ All dependencies are declared in the package.json file. There are also some buil
 If you need to kill the server, use ctrl+c and restart with one of the open commands. 
 Note, the server is started in "no-cache" mode (-c-1 flag) for MUCH easier development and debugging. You do not want to run your production application like this as it will slow down the customer experience on repeat skill invocations. 
 
+## Running tests manually
+
+First make sure jasmine dependency is installed:
+
+ cd lambda
+ npm install --save-dev jasmine
+
+Now initialize jasmine:
+
+ npx jasmine init
+
+Now, you can run tests from the `lambda` directory with 
+
+ npm test
+
+
+
 ## Bugs?
 
 Please open bug reports on Github using Github issues. Include the steps taken to reproduce. You can use this for suggested improvements, as well.

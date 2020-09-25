@@ -57,7 +57,7 @@ const LaunchRequestHandler = {
         speakOutput += reprompt;
         conditionallyLaunchWebApp(handlerInput);
         handlerInput.responseBuilder.speak(ssmlWrapDomain(speakOutput));
-            
+        
         if(isHTMLCapableFireTV(handlerInput)) {
             return handlerInput.responseBuilder.getResponse();
         }
@@ -111,7 +111,7 @@ function isHTMLCapableFireTV(handlerInput) {
 const HasCactusLaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest'
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
     
@@ -120,7 +120,7 @@ const HasCactusLaunchRequestHandler = {
         
         const status = statusUtil.getStatus(profile);
         
-        if (!status.alive) {            
+        if (!status.alive) {
             profile = profileUtil.cleanUpCactus(profile);
             
             const attributesManager = handlerInput.attributesManager;
@@ -146,7 +146,7 @@ const hasCactusCaptureDestinationHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CaptureDestination'
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput){
         handlerInput.responseBuilder.speak('We already have a cactus')
@@ -173,6 +173,9 @@ const CaptureDestinationHandler = {
         
         const profile = getProfile(handlerInput);
         const name = await getRandomName();
+        
+        profile.cactus = profileUtil.defaultCactus(profile.timeZone);
+        console.log('initializing cactus', profile);
 
         profile.cactus.name = name.replace(/"/g,"");
         profile.cactus.voice = util.getRandomItemFromList(["Brian", "Emma"]);
@@ -202,7 +205,6 @@ const CaptureDestinationHandler = {
         speakOutput += 'they’ll get <prosody pitch="high">chilly</prosody> at ';
         speakOutput += 'night if you don’t close them!</prosody> ';
 
-    
         // let speakOutput = `${SOUND_FX.DESTINATION_TONE} I found the perfect cactus for you. `;
         // speakOutput += `Meet ${name}. `;
         // speakOutput += 'They need water and sunlight to thrive. ';
@@ -261,6 +263,7 @@ const WaterCactusIntentHandler = {
         //TODO: figure out max waterLevel based upon cactus size (no hardcoding to 20)
         if (!status.alive) {
             profile = profileUtil.cleanUpCactus(profile);
+            speakOutput = status.message;
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
@@ -284,7 +287,7 @@ const WaterCactusIntentHandler = {
                 }
             });
         }
-        handlerInput.responseBuilder.speak(status.message)
+        handlerInput.responseBuilder.speak(speakOutput);
         if(isHTMLCapableFireTV(handlerInput)) {
             return handlerInput.responseBuilder.getResponse();
         }
@@ -299,7 +302,7 @@ const HasCactusYesIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.YesIntent'
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         handlerInput.responseBuilder.speak('You already have a cactus.')
@@ -328,7 +331,7 @@ const DeadCactusNoIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent'
-            && !getProfile(handlerInput).cactus.name;
+            && !getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         let speakOutput = "Ok. I'll give you time to grieve. I have lots "; 
@@ -346,7 +349,7 @@ const HasCactusNoIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent'
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         handlerInput.responseBuilder.speak("You already have a cactus that's alive and well. You water the water the cactus, or open and close the blinds. Which will it be?")
@@ -373,6 +376,8 @@ const WebAppCloudLogger = {
         const {
             messageQueue
         } = handlerInput.requestEnvelope.request.message;
+        console.log("WebAppCloudLogger request: " + JSON.stringify(handlerInput.requestEnvelope.request));
+
         messageQueue.forEach(message => {
             const {
                 level,
@@ -452,7 +457,7 @@ const ShowBadgesIntentHandler = {
 
 const GetStatusIntentHandler = {
     canHandle(handlerInput) {
-        return getProfile(handlerInput).cactus.name && (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+        return getProfile(handlerInput).cactus && (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'GetStatusIntent') 
             || (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
             && getMessageIntent(handlerInput.requestEnvelope) === 'GetStatusIntent');
@@ -510,7 +515,7 @@ const HasCactusOpenBlindsIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'OpenBlindsIntent') ||
             (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
             && getMessageIntent(handlerInput.requestEnvelope) === 'OpenBlindsIntent')
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         
@@ -568,7 +573,7 @@ const HasCactusCloseBlindsIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CloseBlindsIntent')
             || (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
             && getMessageIntent(handlerInput.requestEnvelope) === 'CloseBlindsIntent')
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         
@@ -637,7 +642,7 @@ const HelpIntentHandler = {
 
         const profile = getProfile(handlerInput);
 
-        if (profile.cactus.name) {
+        if (profile.cactus) {
             speakOutput = `You’re raising a cactus named ${profile.cactus.name}. `;
             speakOutput += "You can open the blinds during the day to make sure they get enough sunshine, "
             speakOutput += "but don’t forget to close them at night or they’ll get cold! "        
@@ -723,7 +728,7 @@ const ErrorHandler = {
         return true;
     },
     handle(handlerInput, error) {
-        console.log(`~~~~ Error handled: ${error.stack}`);
+        console.error(`~~~~ Error handled: ${error.stack}`);
         const speakOutput = `<amazon:emotion name="disappointed" intensity="high">Aww no, The code is broken.</amazon:emotion>`;
         handlerInput.responseBuilder.speak(speakOutput)
         if(isHTMLCapableFireTV(handlerInput)) {
@@ -745,7 +750,7 @@ const NewSessionRequestInterceptor = {
     
     const profile = getProfile(handlerInput);
 
-    if (handlerInput.requestEnvelope.session.new && profile.cactus.name) {
+    if (handlerInput.requestEnvelope.session.new && profile.cactus) {
         
         const currentDateTime = moment.tz(profile.timeZone);
         const latestInteraction = moment(profile.latestInteraction).tz(profile.timeZone);
@@ -763,8 +768,7 @@ const NewSessionRequestInterceptor = {
   }
 };
 
-// TODO: rename to LoadProfileRequestInterceptor
-const loadProfileInterceptor = {
+const LoadProfileRequestInterceptor = {
     async process(handlerInput) {
         console.log("WHOLE REQUEST: " + JSON.stringify(handlerInput.requestEnvelope));
         const attributesManager = handlerInput.attributesManager;
@@ -773,13 +777,12 @@ const loadProfileInterceptor = {
 
         const deviceId = Alexa.getDeviceId(handlerInput.requestEnvelope);
         const timeZone = await util.getTimeZone(handlerInput, deviceId);
-        console.log("loadProfileInterceptor - timezone", timeZone);
+        console.log("LoadProfileRequestInterceptor - timezone", timeZone);
         
         // If no profile initiate a new one - first interaction with skill
-        if (!profile.hasOwnProperty("cactus")) {
-            profile = profileUtil.defaultProfile(timeZone);
-            console.log('initializing profile', profile);
-        } else {
+        if(!profile.hasOwnProperty("lifeTime")) {
+            profile = profileUtil.defaultProfile()
+        } else if (profile.cactus) { // Check if there is a cactus before compute status
             profile.cactus = statusUtil.computeStatus(profile, moment(), timeZone);
             badgeUtil.evaluate(profile, moment());
         }
@@ -787,7 +790,7 @@ const loadProfileInterceptor = {
         profile.timeZone = timeZone;
         
         attributesManager.setSessionAttributes(profile);
-        console.log("loadProfileInterceptor", JSON.stringify(attributesManager.getSessionAttributes()));
+        console.log("LoadProfileRequestInterceptor", JSON.stringify(attributesManager.getSessionAttributes()));
     }
 }
 
@@ -894,7 +897,7 @@ exports.handler = Alexa.SkillBuilders.custom()
         IntentReflectorHandler, // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
     )
     .addRequestInterceptors(
-        loadProfileInterceptor,
+        LoadProfileRequestInterceptor,
         NewSessionRequestInterceptor
     )
     .addResponseInterceptors(

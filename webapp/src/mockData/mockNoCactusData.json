@@ -1,0 +1,27 @@
+{
+    "lifeTime": {
+        "waterUnits": 10
+    },
+    "unlockedBadges": {
+        "latest": "",
+        "waterUnits": [],
+        "earlyBird": false,
+        "nightOwl": false,
+        "durations": {
+            "1": false,
+            "3": false,
+            "7": false,
+            "14": false,
+            "30": false,
+            "90": false,
+            "180": false,
+            "365": false
+        },
+        "helicopterParent": true,
+        "latestKey": "helicopterParent"
+    },
+    "timesChecked": 1,
+    "latestInteraction": 1597355118000,
+    "timeZone": "America/Los_Angeles",
+    "newBadge": false
+  }

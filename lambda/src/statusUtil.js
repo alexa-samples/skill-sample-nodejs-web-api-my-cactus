@@ -99,8 +99,6 @@ const getStatus = function(profile) {
         needs: needs
     };
 
-
-
     let statusMessage;
     let prompt = "";
     // Determined that the cactus is dead.

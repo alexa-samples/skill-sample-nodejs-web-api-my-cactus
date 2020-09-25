@@ -5,6 +5,9 @@ skill/lambda/node_modules
 # Don't commit any local persistence files
 lambda/local_persistence_bucket/
 
+# Package lock
+*/package-lock.json
+
 # Logs
 logs
 *.log

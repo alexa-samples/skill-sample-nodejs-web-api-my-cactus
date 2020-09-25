@@ -6,9 +6,7 @@ const moment = require('moment-timezone');
 
 const cleanUpCactus = function(profile) {
 
-    const newCactus = defaultCactus(profile.timeZone);
-
-    profile.cactus = newCactus;
+    profile.cactus = null;
     profile.unlockedBadges = badgeUtil.reset(profile.unlockedBadges);
 
     profile.timesChecked = 1;
@@ -30,12 +28,9 @@ const defaultCactus = function(timeZone) {
 };
 
 const defaultProfile = function (timeZone) {
-
     return {
-        cactus: defaultCactus(timeZone),
         lifeTime: {
           waterUnits: 0
-          
         },
         unlockedBadges: {
             latest: '',

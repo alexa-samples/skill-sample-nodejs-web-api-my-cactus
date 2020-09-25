@@ -11,10 +11,9 @@ module.exports = {
         blindsMixerUp.update(delta);
         blindsMixerDown.update(delta);
     },
-    init(startInfo, debugLevel) {
+    init(blindsOpen, debugLevel) {
         this.debugLevel = debugLevel;
-        blindsOpen = startInfo.blindState === "open";
-        console.log(startInfo);
+        this.blindsOpen = blindsOpen;
     },
     shouldClick(selectedObjSet) {
         return selectedObjSet.has(BLINDS_OBJ_NAME);
