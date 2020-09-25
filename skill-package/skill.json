@@ -49,9 +49,31 @@
             "type": "ALEXA_PRESENTATION_APL"
           },
           {
+            "type": "ALEXA_EXTENSION",
+            "requestedExtensions": [
+              {
+                "uri": "alexaext:smartmotion:10"
+              },
+              {
+                "uri": "alexaext:entitysensing:10"
+              }
+            ],
+            "autoInitializedExtensions": [
+              {
+                "uri": "alexaext:smartmotion:10",
+                "settings": {
+                  "wakeWordResponse": "turnToWakeWord"
+                }
+              }
+            ]
+          },
+          {
             "type": "ALEXA_PRESENTATION_HTML"
           }
-        ]
+        ],
+        "endpoint": {
+          "uri": "arn:aws:lambda:us-east-1:332609039282:function:ask-PricklyPete-default-skillSt-AlexaSkillFunction-1MRFYO98ZKI5G"
+        }
       }
     },
     "manifestVersion": "1.0",

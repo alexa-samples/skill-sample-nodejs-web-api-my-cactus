@@ -45,10 +45,14 @@ var camera, scene, renderer, clock; // set in init()
 
 var hemiLight; // TODO follow up on lighting. 
 var alexaClient; // Also set in init
+var entitySensing;
+var smartMotion;
+
 var assetsLoaded = false; //waits that the 3D assets have loaded
 var alexaLoaded = false; //waits that the Alexa module exists
 var countGlbs = 0;
 var NUMBER_GLBS = 6;//Update if adding another GLB to the game.
+
 
 //Loader information
 const sourceArtDir = "./assets/source-art/";
@@ -126,6 +130,23 @@ function update() {
         //more logging if needed
     }
 
+    //TODO add this to the motion.js class
+    if(entitySensing) {
+        var user = entitySensing.primaryUser;
+        console.log(entitySensing.primaryUser);
+
+        if(entitySensing.entitySensingState.errorCode === 0) {
+            messageSender.log(user.poise);
+            if(user.poise.relativeAngle < -5) {
+                controls.rotateLeft(1);
+            } else if(user.poise.relativeAngle > 5) {
+                controls.rotateLeft(-1);
+            }
+        } else {
+            messageSender.error(entitySensing.entitySensingState.error)
+        }
+    }
+
     if(assetsLoaded) {
         spider.update(delta);
         pail.update(delta);
@@ -147,12 +168,20 @@ function setupAlexa() {
             } = args;
             alexaClient = alexa;
             alexaLoaded = true;
-            console.log(JSON.stringify("args: " + JSON.stringify(args)));
-
-            console.log("Capabilities: " + JSON.stringify(alexaClient.capabilities));
 
             //initialize our messageSender class
             messageSender.init(alexaClient);
+            //initialize motion extensions.
+            if(alexa.capabilities.extensions['alexaext:entitysensing:10']) {
+                entitySensing = EntitySensing.create(createExtensionsMessageProvider);
+            } 
+            if(alexa.capabilities.extensions['alexaext:smartmotion:10']) {
+                smartMotion = SmartMotion.create(createExtensionsMessageProvider);
+            }
+
+            console.log(JSON.stringify("args: " + JSON.stringify(args)));
+
+            messageSender.log("Capabilities: " + JSON.stringify(alexaClient.capabilities));
 
             if(debugLevel >= 1) {
                 console.log("Startup Alexa success. Logging device and memory info");
