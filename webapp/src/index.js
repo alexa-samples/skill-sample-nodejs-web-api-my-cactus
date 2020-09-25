@@ -322,7 +322,7 @@ function init() {
     document.addEventListener("mousedown", domClick, true);
 
     badgeElement.onclick = function() {
-        if(alexa != null) {``
+        if(alexa != null) {
             alexaClient.skill.sendMessage({
                 intent:"ShowBadgesIntent",
                 clicked:"badgeButton"
