@@ -4,7 +4,7 @@ This is the repository for the my cactus simulation Alexa Game. This is an Alexa
 
 This skill uses the Alexa Web API for Games for 3D graphics on capable devices. The game is fully playable everywhere Alexa is, since it is a voice-driven experience. 
 
-![A Picture of the My Cactus Web Application running on a FireTV](https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/myCactusScreenshot.png?raw=true)
+![A Picture of the My Cactus Web Application running on a FireTV](https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/blob/master/myCactusScreenshot.png?raw=true)
 
 ## Alexa Skill Usage Instructions
 
