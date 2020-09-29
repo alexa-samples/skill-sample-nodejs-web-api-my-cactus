@@ -4,17 +4,18 @@ This is the repository for the my cactus simulation Alexa Game. This is an Alexa
 
 This skill uses the Alexa Web API for Games for 3D graphics on capable devices. The game is fully playable everywhere Alexa is, since it is a voice-driven experience. 
 
+![A Picture of the My Cactus Web Application running on a FireTV](https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/myCactusScreenshot.png?raw=true)
+
 ## Alexa Skill Usage Instructions
 
 This project is meant to be used with ASK CLI V2. There is AWS infrastructure involved and you will also need an AWS account for this. This uses the ASK CLI V2 cfn-deployer. The infrastructure is defined in [skill-stack.yaml](./infrastructure/cfn-deployer/skill-stack.yaml). The code is defined in the lambda directory. 
-
 
 ### Get this repo
 If you want to run this sample, make sure you are running ASK CLI v2. For instructions on doing so and setting up an AWS IAM user for use with the CLI, see [the technical reference docs.](https://developer.amazon.com/en-US/docs/alexa/smapi/quick-start-alexa-skills-kit-command-line-interface.html)
 
 From your terminal, try:
 
-`ask new --template-url https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus`
+`ask new --template-url https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus --template-branch master`
 
 Select `AWS with CloudFormation`.
 
@@ -42,6 +43,10 @@ Then you can deploy using: `ask deploy` from this directory. This will set up th
 Then, head over to the webapp directory. From there, run:
 
 `uploadS3`
+
+Alternatively, from the webapp directory, you can run:
+
+`aws s3 cp ./dist s3://$MY_CACTUS_S3/dist/ --recursive --acl public-read`
 
 This will take the files and upload them. From there, you can directly test and the code will point to the public website hosted in the cloud. If you would like to override the value provided for the publicly accessible link to a local one (for instance, if you are serving the assets from your local environment), simply open up the Lambda console, and override the "Domain" environment variable with your own. For more instructions head to the [webapp directory](./webapp).
 
