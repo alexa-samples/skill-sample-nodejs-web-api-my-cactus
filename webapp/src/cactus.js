@@ -12,7 +12,7 @@ const FLOWERING_AGE = 30;
 const SECOND_ARM_AGE = 20;
 const FIRST_ARM_AGE = 10;
 
-var debugLevel;
+var debugLevel, smartMotion = null;
 const THREE = require('three');
 
 const CACTUS_BODY_OBJ_NAME = "cactus_large";
@@ -54,8 +54,9 @@ module.exports = {
             cactusArmLarge.visible = false;
         }
     },
-    init(daysAlive, debugLevel) {
+    init(daysAlive, motionInstance, debugLevel) {
         happyDays = daysAlive;
+        this.smartMotion = motionInstance;
         this.debugLevel = debugLevel;
     },
     shouldClick(selectedObjSet) {
@@ -85,11 +86,12 @@ module.exports = {
     },
     dance() {
         cactusDanceAction.reset().play();
-    },
-    onClick(alexa) {
-        if(alexa !== null) {
-            cloudLog("Poked the cactus.");
+
+        if(this.smartMotion != null) {
+            this.smartMotion.playNamedChoreo({name: "ScreenImpactCenter"});
         }
+    },
+    onClick() {
         if(debugLevel >= 1) {
             infoElement.textContent = "poked cactus";
         }

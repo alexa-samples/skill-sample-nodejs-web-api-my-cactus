@@ -108,16 +108,16 @@ function update() {
     const selectedObjSet = selector.getSelectedObjSet();
     if(cactus.shouldClick(selectedObjSet)) {
         screenShake.shake(camera, 500, 200, 200);//TODO figure out or cut
-        cactus.onClick(alexa);
+        cactus.onClick(alexaClient);
     }
     if(blinds.shouldClick(selectedObjSet)) {
-        blinds.onClick(alexa, debugElement);
+        blinds.onClick(alexaClient, debugElement);
     }
     if(pail.shouldClick(selectedObjSet)) {
-        pail.onClick(alexa, debugElement);
+        pail.onClick(alexaClient, debugElement);
     }
     if(spider.shouldClick(selectedObjSet)) {
-        spider.onClick(alexa);
+        spider.onClick(alexaClient);
     }
 
     controls.update(); // TODO fix this later. Screen shake does not play nice.
@@ -133,10 +133,7 @@ function update() {
     //TODO add this to the motion.js class
     if(entitySensing) {
         var user = entitySensing.primaryUser;
-        console.log(entitySensing.primaryUser);
-
         if(entitySensing.entitySensingState.errorCode === 0) {
-            messageSender.log(user.poise);
             if(user.poise.relativeAngle < -5) {
                 controls.rotateLeft(1);
             } else if(user.poise.relativeAngle > 5) {
@@ -160,24 +157,19 @@ function update() {
  * Sets up the Alexa object and listeners.
  */
 function setupAlexa() {
-    Alexa.create({version: '1.0'})
-        .then((args) => {
+    console.log("Attempting to set up Alexa : " + JSON.stringify(Alexa));
+    Alexa.create({version: '1.1'})
+        .then(async (args) => {
             const {
                 alexa,
-                message
+                message,
+                createExtensionsMessageProvider
             } = args;
             alexaClient = alexa;
             alexaLoaded = true;
 
             //initialize our messageSender class
             messageSender.init(alexaClient);
-            //initialize motion extensions.
-            if(alexa.capabilities.extensions['alexaext:entitysensing:10']) {
-                entitySensing = EntitySensing.create(createExtensionsMessageProvider);
-            } 
-            if(alexa.capabilities.extensions['alexaext:smartmotion:10']) {
-                smartMotion = SmartMotion.create(createExtensionsMessageProvider);
-            }
 
             console.log(JSON.stringify("args: " + JSON.stringify(args)));
 
@@ -192,6 +184,7 @@ function setupAlexa() {
                         innerWidth: window.innerWidth,
                         innerHeight: window.innerHeight
                     },
+                    // smartMotionEnvironment: smartMotion? smartMotion.environment : null,
                     memory: memInfo,
                     microphone: alexaClient.capabilities.microphone
                 })));
@@ -199,7 +192,17 @@ function setupAlexa() {
                 infoElement.textContent = JSON.stringify(message);
             }
 
+            //initialize motion extensions.
+            console.log(alexaClient.capabilities);
+            if(alexaClient.capabilities.extensions['alexaext:entitysensing:10']) {
+                entitySensing = await EntitySensing.create(createExtensionsMessageProvider);
+            } 
+            if(alexaClient.capabilities.extensions['alexaext:smartmotion:10']) {
+                smartMotion = await SmartMotion.create(createExtensionsMessageProvider);
+            }
+
             refreshGameState(message);
+
             //Start BG Music when we know it is an Alexa-enabled device.
             bgMusic.play();
             const time =  moment(message.latestInteraction).tz(message.timeZone);
@@ -269,13 +272,12 @@ function setupAlexa() {
             });
         })
         .catch(error => {
-            console.log(JSON.stringify(error));
             if(debugLevel >= 1) {
-                debugElement.appendChild(document.createTextNode('\nstartup failed, better message customer'));
+                debugElement.appendChild(document.createTextNode('\nstartup failed, for a reason: ' + JSON.stringify(error)));
 
                 infoElement.textContent = 'startup failed, Sorry, customer.';
             }
-            alexa = null;
+            alexaClient = null;
             const time =  moment(mockData.latestInteraction).tz(mockData.timeZone);
             refreshGameState(mockData);
             //Start BG Music when we know it is an Alexa-enabled device.
@@ -354,7 +356,7 @@ function init() {
     document.addEventListener("mousedown", domClick, true);
 
     badgeElement.onclick = function() {
-        if(alexa != null) {``
+        if(alexaClient != null) {``
             alexaClient.skill.sendMessage({
                 intent:"ShowBadgesIntent",
                 clicked:"badgeButton"
@@ -424,7 +426,7 @@ function refreshGameState(dataPayload) {
         //initialize state of objects
         let blindsOpen = cactusState.blindState === "open";
         blinds.init(blindsOpen, debugLevel);
-        cactus.init(cactusState.daysAlive, debugLevel);
+        cactus.init(cactusState.daysAlive, smartMotion, debugLevel);
         guiManager.showStatus();
     } else { // setup the scene like there is no cactus
         guiManager.hideStatus();
