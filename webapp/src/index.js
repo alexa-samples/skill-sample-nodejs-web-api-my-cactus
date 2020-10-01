@@ -199,6 +199,8 @@ function setupAlexa() {
             } 
             if(alexaClient.capabilities.extensions['alexaext:smartmotion:10']) {
                 smartMotion = await SmartMotion.create(createExtensionsMessageProvider);
+                debugElement.appendChild(document.createTextNode(
+                    "\nChoreos: " + JSON.stringify(smartMotion.environment.availableChoreos)));
             }
 
             refreshGameState(message);

@@ -8,6 +8,8 @@ var cactusMixer,
 //variables related to the cactus state
 var happyDays;
 
+const SCREEN_IMPACT_CENTER_CHOREO = "ScreenImpactCenter";
+
 const FLOWERING_AGE = 30;
 const SECOND_ARM_AGE = 20;
 const FIRST_ARM_AGE = 10;
@@ -87,8 +89,18 @@ module.exports = {
     dance() {
         cactusDanceAction.reset().play();
 
+        this.triggerDeviceMotion();
+    },
+    triggerDeviceMotion() {
         if(this.smartMotion != null) {
-            this.smartMotion.playNamedChoreo({name: "ScreenImpactCenter"});
+            const durationAnimation = this.smartMotion.environment.availableChoreos.ScreenImpactCenter.approximateDuration;
+            this.smartMotion.playNamedChoreo({name: SCREEN_IMPACT_CENTER_CHOREO});
+            window.setTimeout(function(smartMotion) {
+                smartMotion.playNamedChoreo({name: SCREEN_IMPACT_CENTER_CHOREO});
+            }, durationAnimation, this.smartMotion);
+            window.setTimeout(function(smartMotion) {
+                smartMotion.playNamedChoreo({name: SCREEN_IMPACT_CENTER_CHOREO});
+            }, 2 * durationAnimation, this.smartMotion);
         }
     },
     onClick() {
