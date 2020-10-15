@@ -51,10 +51,7 @@
           {
             "type": "ALEXA_PRESENTATION_HTML"
           }
-        ],
-        "endpoint": {
-          "uri": "arn:aws:lambda:us-east-1:059668468224:function:ask-MyCactus-default-skillStack-AlexaSkillFunction-HT021RNJLOXS"
-        }
+        ]
       }
     },
     "manifestVersion": "1.0",
