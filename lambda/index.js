@@ -7,6 +7,9 @@ const util = require('./util.js');
 const statusUtil = require('./src/statusUtil');
 const badgeUtil = require('./src/badgeUtil');
 const profileUtil = require('./src/profileUtil');
+const ssmlUtil = require('./src/ssmlUtil');
+
+const timeOfDay = require('./src/timeOfDay');
 
 const moment = require('moment-timezone');
 
@@ -14,8 +17,8 @@ const SOUND_FX = require('./src/soundFX');
 
 // BIG TODOS:
 
-// 0. Fix prompt after watering cactus - no prompt = cert failure
-// 1. SSML additions 
+// 0. SSML additions 
+// 1. Refactor new timeOfDayFunction into a module with isItDaylight
 
 // Bug Bash
 
@@ -40,11 +43,11 @@ const LaunchRequestHandler = {
         let speakOutput = `${SOUND_FX.STARTUP_TONE} `;
         speakOutput += 'Your shelf is empty, ';
         speakOutput += 'but <amazon:emotion name="excited" intensity="medium">';
-        speakOutput += 'don\’t despair;</amazon:emotion> <break time=".5s"/>';
-        speakOutput += 'I\’m here to pair you with the right prickly pear; ';
+        speakOutput += 'don\'t despair;</amazon:emotion> <break time=".5s"/>';
+        speakOutput += 'I\'m here to pair you with the right prickly pear; ';
         speakOutput += '<break time=".5s"/>Water and light are what it ';
         speakOutput += 'needs;<break time=".5s"/>';
-        speakOutput += "Treat this succulent well, and they’ll reward your "; 
+        speakOutput += "Treat this succulent well, and they'll reward your "; 
         speakOutput += 'good deeds!<break time=".1s"/> ';
         speakOutput += 'To choose just the right cactus that needs ';
         speakOutput += '<amazon:emotion name="excited" intensity="medium">your ';
@@ -119,18 +122,19 @@ const HasCactusLaunchRequestHandler = {
         const attributesManager = handlerInput.attributesManager;
         let profile = attributesManager.getSessionAttributes();
         
+        let prompt = " You can open or close the blinds, water the cactus, check it's status, or check your badges. What would you like to do?"
         const status = statusUtil.getStatus(profile);
-        
+
         if (!status.alive) {
             profile = profileUtil.cleanUpCactus(profile);
+
+            prompt = '';
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);   
-        }
-
-        const prompt = " You can open or close the blinds, water the cactus, check it's status, or check your badges. What would you like to do?"
+        }        
         
         conditionallyLaunchWebApp(handlerInput);
         handlerInput.responseBuilder.speak(status.message + prompt);
@@ -194,8 +198,8 @@ const CaptureDestinationHandler = {
         speakOutput += 'I found the <prosody pitch="high">perfect</prosody> ';
         speakOutput += '<prosody volume="loud">cactus for you!</prosody> ';
         speakOutput += `Meet ${name}. They need water, and sunlight to thrive. `; 
-        speakOutput += '<prosody rate="110%">They’re just a sprout right now, ';
-        speakOutput += 'but keep them happy and they’ll grow a ';
+        speakOutput += '<prosody rate="110%">They\'re just a sprout right now, ';
+        speakOutput += 'but keep them happy and they\'ll grow a ';
         speakOutput += '<prosody pitch="high">little</prosody> each day. ';
         speakOutput += '</prosody> <break time="1s"/><prosody rate="110%">You ';
         speakOutput += 'can ask me to water your cactus; but not ';
@@ -203,8 +207,8 @@ const CaptureDestinationHandler = {
         speakOutput += '<prosody pitch="high">too much!</prosody></prosody> ';
         speakOutput += 'Or you can ask me to open and close the blinds. ';
         speakOutput += `<prosody rate="110%">${name} needs lots of sun, but `;
-        speakOutput += 'they’ll get <prosody pitch="high">chilly</prosody> at ';
-        speakOutput += 'night if you don’t close them!</prosody> ';
+        speakOutput += 'they\'ll get <prosody pitch="high">chilly</prosody> at ';
+        speakOutput += 'night if you don\'t close them!</prosody> ';
 
         // let speakOutput = `${SOUND_FX.DESTINATION_TONE} I found the perfect cactus for you. `;
         // speakOutput += `Meet ${name}. `;
@@ -246,11 +250,11 @@ const CaptureDestinationHandler = {
 // TODO: refactor and move to a different file - does this belong in the status util? 
 // Maybe we need an action util?
 const DRINK_MESSAGES = [
-    '<emphasis level="strong">Ah!</emphasis> That’s <prosody pitch="high">refreshing!</prosody>',
+    '<emphasis level="strong">Ah!</emphasis> That\'s <prosody pitch="high">refreshing!</prosody>',
     '<prosody rate="90%">That <prosody pitch="+20%">water</prosody> is <prosody pitch="+20%">refreshing</prosody> stuff.</prosody>',
     '<prosody rate="90%"><prosody pitch="+20%">Ah!</prosody> That hit the <prosody pitch="+20%">Spot!</prosody></prosody>',
     '<prosody rate="90%"><prosody pitch="+20%">Thanks. </prosody>I\'m feeling like a fish in <prosody pitch="+20%">water again!</prosody></prosody>',
-    '<prosody rate="90%">It’s good to <prosody pitch="+20%">feel wet </prosody>behind <prosody pitch="+20%">my ears again!</prosody></prosody>',
+    '<prosody rate="90%">It\'s good to <prosody pitch="+20%">feel wet </prosody>behind <prosody pitch="+20%">my ears again!</prosody></prosody>',
     '<prosody rate="90%"><prosody pitch="+20%">Ah!</prosody> Even <prosody pitch="+20%">cacti</prosody></prosody> need <prosody pitch="+20%"> a shower</prosody> sometimes.',
     '<prosody rate="90%"><prosody pitch="+20%">Thank you!</prosody> I feel <prosody pitch="+20%">quenched</prosody></prosody> now!',
     '<prosody rate="90%">Those <prosody pitch="+20%">showers sure beat </prosody> flash floods <prosody pitch="+20%"> on the prairie!</prosody></prosody>',
@@ -291,6 +295,9 @@ const WaterCactusIntentHandler = {
             speakOutput += status.message;
         } else {
             speakOutput += ssmlUtil.wrapCactusVoice(profile, util.getRandomItemFromList(DRINK_MESSAGES));
+            if(status.needs.water || status.needs.comfort) {
+                speakOutput += status.reprompt;
+            }
         }
         
         const attributesManager = handlerInput.attributesManager;
@@ -706,16 +713,16 @@ const HelpIntentHandler = {
         let speakOutput = "This is my cactus. A cactus raising simulation game. ";
         speakOutput += "I have lots of cacti in need of care! To match you ";
         speakOutput += "with the right one for you to raise as your own though, ";
-        speakOutput += "I’ll need to know a bit about you. If you could go ";
+        speakOutput += "I'll need to know a bit about you. If you could go ";
         speakOutput += "anywhere in the world, <prosody volume=\"x-loud\">where ";
         speakOutput += "would you visit?</prosody>";
         
         const profile = getProfile(handlerInput);
 
         if (profile.cactus) {
-            speakOutput = `You’re raising a cactus named ${profile.cactus.name}. `;
+            speakOutput = `You're raising a cactus named ${profile.cactus.name}. `;
             speakOutput += "You can open the blinds during the day to make sure they get enough sunshine, "
-            speakOutput += "but don’t forget to close them at night or they’ll get cold! "        
+            speakOutput += "but don't forget to close them at night or they'll get cold! "        
             speakOutput += "Pay close attention to their water, too. "
             speakOutput += "Over-watering is just as bad as a drought! "            
         }
@@ -729,6 +736,60 @@ const HelpIntentHandler = {
             .getResponse();
     }
 };
+
+const NIGHT_GOODBYE = [
+    "Have a splendid night!",
+    "Good night!",
+    "Good evening to you then!",
+    "I have lots of cacti in need of care! To match you with the right one for you to raise as your own, though, I'll need to know a bit about you. If you could go anywhere in the world, where would you visit?",
+    "Good night then.",
+    "It was nice chatting with you today. Goodbye.",
+    "Sweet dreams!",
+    "Have a peaceful evening!",
+    "Pleasure chatting with you this evening. Night!",
+    "Good night, sleep tight!",
+];
+
+const AFTERNOON_GOODBYE = [
+    "See you later alligator!",
+    "Bon voyage!",
+    "Until next time! Bye!",
+    "Nice talking to you!",
+    "Don't forget to stop and smell the roses! Bye!",
+    "Good chatting with you. See you later.",
+    "Thanks for visiting!",
+    "Hasta la vista, baby!",
+    "It was lovely seeing you, as always!",
+    "Have a splendid afternoon. Bye bye!",
+];
+
+const MORNING_GOODBYE = [
+    "Morning Have an excellent day, my friend!",
+    "I hope you have a sunny day! Goodbye!",
+    "Have a glorious day!",
+    "Sending you sunny vibes for the day ahead of you! Goodbye!",
+    "Until next time, carpe diem!",
+    "Thanks for starting your day with me!",
+    "It's always a pleasure starting my day with you! See ya!",
+    "I wish you a bright day, my friend. Goodbye.",
+    "I can't wait to chat later. See ya!",
+    "Have a wonderful day buddy!",
+];
+
+const HAS_NEED_GOODBYE = [
+
+    "Come back soon to nurse [cactus name] back to health",
+    "[cactus name] could still use some attention. Come back soon!",
+    "Come back soon to check on [cactus name].",
+    "I'm sure [cactus name] would like to chat, but they're still not feeling well. Come back later to care for them.",
+    "[cactus name] will miss you.",
+    "[cactus name] isn't feeling well enough to chat any more. Goodbye.",
+    "Come back soon to care for [cactus name]",
+    "[cactus name] will be looking forward to some TLC later. Goodbye.",
+    "Ok. Come back to check on [cactus name] again soon!",
+];
+
+
 const CancelAndStopIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -736,9 +797,43 @@ const CancelAndStopIntentHandler = {
                 || Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.StopIntent');
     },
     handle(handlerInput) {
-        const speakOutput = 'Goodbye!';
+
+        const profile = getProfile(handlerInput);
+        const tod = timeOfDay(moment(), profile.timeZone);
+        let speakOutput = '';
+
+        const status = statusUtil.getStatus(profile);
+
+        if (status.alive && !status.needs.comfort && !status.needs.water)
+        {
+            switch (tod) {
+                case -1: // Night
+                    speakOutput = util.getRandomItemFromList(NIGHT_GOODBYE);
+                    break;
+                case 0: // Afternoon
+                    speakOutput = util.getRandomItemFromList(AFTERNOON_GOODBYE);
+                    break;
+                case 1: // Morning
+                    speakOutput = util.getRandomItemFromList(MORNING_GOODBYE);
+                    break;
+                default:
+                    speakOutput = "Goodbye!";
+                    console.log('Unexpected goodbye message', JSON.stringify(handlerInput.requestEnvelope.request))
+                    break;
+            }
+            speakOutput = ssmlUtil.wrapCactusVoice(profile, speakOutput);
+        } else if(status.alive) {
+            speakOutput = util.getRandomItemFromList(HAS_NEED_GOODBYE)
+                .replace("[cactus name]", profile.cactus.name);
+        } else {
+            // cactus is dead and the user said, "stop, cancel, etc.
+            // TODO: confirm with Alison what should be said here.
+            speakOutput = "Goodbye for now.";
+        }
+
         return handlerInput.responseBuilder
             .speak(speakOutput)
+            .withShouldEndSession(true)
             .getResponse();
     }
 };
@@ -903,7 +998,7 @@ const getRandomName = async function() {
 }
 
 const https = require('https');
-const ssmlUtil = require('./src/ssmlUtil.js');
+const { stat } = require('fs');
 
 function getHTTP(options) {
   return new Promise(((resolve, reject) => {
