@@ -6,7 +6,8 @@
       "daysAlive": 0,
       "blindState": "open",
       "lastUpdated": 1595974111113,
-      "name": "Sharpie Sharp"
+      "name": "Sharpie Sharp",
+      "voice": "Brian"
     },
     "lifeTime": {
       "waterUnits": 10
