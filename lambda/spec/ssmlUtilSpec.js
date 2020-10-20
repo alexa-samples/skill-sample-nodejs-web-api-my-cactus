@@ -4,7 +4,7 @@ const ssmlUtil = require('../src/ssmlUtil');
 
 describe('wrapDomain', function() {
     it('should be wrapped in the domain ssml tag', function() {
-        const speakOutput = "Hello there, I'm a cactus.";
+        const speakOutput = `Hello there, I'm a cactus.`;
 
         const actual = ssmlUtil.wrapDomain(speakOutput);
         const expected = '<amazon:domain name="long-form">Hello there, I\'m a cactus.</amazon:domain>';
@@ -17,7 +17,7 @@ describe('wrapDomain', function() {
 describe('wrapCactusVoice', function() {
     it('Should wrap in output with Brian\'s voice', function() {
 
-        const speakOutput = "Hello there, I'm a cactus.";
+        const speakOutput = `Hello there, I'm a cactus.`;
         const profile = require('./profiles/no-needs.json');
 
         const actual = ssmlUtil.wrapCactusVoice(profile,speakOutput);

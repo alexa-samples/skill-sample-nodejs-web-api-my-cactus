@@ -17,7 +17,7 @@ const SOUND_FX = require('./src/soundFX');
 
 // BIG TODOS:
 
-// 0. SSML additions 
+// 0. SSML additions - has needs status = might need to rethink what SICK means
 // 1. Refactor new timeOfDayFunction into a module with isItDaylight
 
 // Bug Bash
@@ -972,7 +972,7 @@ const UpdateLatestInteractionResponseInterceptor = {
     }
 }
 
-const logResponseJsonResponseInterceptor = {
+const LogResponseJsonResponseInterceptor = {
     process(handlerInput) {
         console.log("Response JSON:", JSON.stringify(handlerInput.responseBuilder.getResponse()));
     }
@@ -1074,7 +1074,7 @@ exports.handler = Alexa.SkillBuilders.custom()
     )
     .addResponseInterceptors(
         UpdateLatestInteractionResponseInterceptor,
-        logResponseJsonResponseInterceptor
+        LogResponseJsonResponseInterceptor
     )
     .addErrorHandlers(
         ErrorHandler,
