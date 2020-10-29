@@ -17,6 +17,12 @@
           "handler": "index.handler",
           "templatePath": "./infrastructure/cfn-deployer/skill-stack.yaml",
           "awsRegion": "us-east-1"
+        },
+        "cfn":{
+          "capabilities": [
+            "CAPABILITY_IAM",
+            "CAPABILITY_AUTO_EXPAND"
+          ]
         }
       }
     }
