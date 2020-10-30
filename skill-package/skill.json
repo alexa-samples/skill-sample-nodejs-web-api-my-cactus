@@ -55,7 +55,26 @@
       }
     },
     "manifestVersion": "1.0",
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "containsAds": false,
+      "isChildDirected": false,
+      "isExportCompliant": true,
+      "locales": {
+        "en-US": {}
+      },
+      "usesPersonalInfo": false
+    },
     "publishingInformation": {
+      "automaticDistribution": {
+        "isActive": true,
+        "sourceLocaleForLanguages": [
+          {
+            "language": "en",
+            "sourceLocale": "en-US"
+          }
+        ]
+      },
       "category": "KNOWLEDGE_AND_TRIVIA",
       "distributionCountries": [],
       "isAvailableWorldwide": true,
@@ -64,15 +83,21 @@
           "description": "Sample Full Description",
           "examplePhrases": [
             "Alexa open my cactus",
-            "hello",
-            "help"
+            "let it rain",
+            "close the blinds"
           ],
-          "keywords": [],
+          "keywords": [
+            "cactus",
+            "simulator",
+            "game"
+          ],
+          "largeIconUri": "https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/tree/master/icons/skill-icon-108x.png?raw=true",
           "name": "My Cactus",
+          "smallIconUri": "https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/tree/master/icons/skill-icon-512x.png?raw=true",
           "summary": "Sample Short Description"
         }
       },
-      "testingInstructions": "Sample Testing Instructions."
+      "testingInstructions": "Open my cactus\n\nwater my cactus\n\nclose the blinds\n\nopen the blinds\n\nhelp"
     }
   }
 }

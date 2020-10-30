@@ -42,11 +42,17 @@ Then you can deploy using: `ask deploy` from this directory. This will set up th
 
 Then, head over to the webapp directory. From there, run:
 
-`uploadS3`
+`npm run build`
 
-Alternatively, from the webapp directory, you can run:
+Then:
+
+`npm run uploadS3`
+
+Alternatively, from the webapp directory, instead of using the `npm run` script, you can run:
 
 `aws s3 cp ./dist s3://$MY_CACTUS_S3/dist/ --recursive --acl public-read`
+
+where $MY_CACTUS_S3 is the S3 bucket name created in the cloudformation deployment during `ask deploy`.
 
 This will take the files and upload them. From there, you can directly test and the code will point to the public website hosted in the cloud. If you would like to override the value provided for the publicly accessible link to a local one (for instance, if you are serving the assets from your local environment), simply open up the Lambda console, and override the "Domain" environment variable with your own. For more instructions head to the [webapp directory](./webapp).
 
@@ -78,7 +84,7 @@ Or, if this is aborted, you can always hard reset the branch:
 
  git reset --hard origin/master 
 
-Now you can pull whenever you need to update your code. 
+Now, you can pull whenever you need to update your code. 
 
 ## Web Application Setup
 
