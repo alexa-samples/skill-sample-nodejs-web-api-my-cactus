@@ -91,9 +91,9 @@
             "simulator",
             "game"
           ],
-          "largeIconUri": "https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/tree/master/icons/skill-icon-108x.png?raw=true",
+          "largeIconUri": "https://d3ikwhve9nzv4s.cloudfront.net/skill-icon-large.png",
           "name": "My Cactus",
-          "smallIconUri": "https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/tree/master/icons/skill-icon-512x.png?raw=true",
+          "smallIconUri": "https://d3ikwhve9nzv4s.cloudfront.net/skill-icon-small.png",
           "summary": "Sample Short Description"
         }
       },
