@@ -1,0 +1,52 @@
+{
+  "askcliStatesVersion": "2020-03-31",
+  "profiles": {
+    "cactus": {
+      "skillId": "amzn1.ask.skill.02a0c7bf-13ba-4306-a86d-3a9d7d5c38c9",
+      "skillMetadata": {
+        "lastDeployHash": "xyomdyBqrRyIv7g1bI6SjbsoaCk="
+      },
+      "code": {
+        "default": {
+          "lastDeployHash": "8lCFyTDaVXcYFpn9wibpQ6pLT38="
+        }
+      },
+      "skillInfrastructure": {
+        "@ask-cli/cfn-deployer": {
+          "deployState": {
+            "default": {
+              "s3": {
+                "bucket": "ask-skill-sample-nodejs-we-askprod-useast1-1600997215240",
+                "key": "endpoint/build.zip"
+              },
+              "stackId": "arn:aws:cloudformation:us-east-1:059668468224:stack/ask-MyCactus-default-skillStack-1602797134866/005d6dc0-0f2d-11eb-a235-121b2f990f49",
+              "outputs": [
+                {
+                  "OutputKey": "SkillEndpoint",
+                  "OutputValue": "arn:aws:lambda:us-east-1:059668468224:function:ask-MyCactus-default-skillStack-AlexaSkillFunction-1DB9WED7UUJ4P",
+                  "Description": "LambdaARN for the regional endpoint"
+                },
+                {
+                  "OutputKey": "S3BucketSecureURL",
+                  "OutputValue": "https://ask-mycactus-default-skillstack-16-s3webappbucket-4r70zfaibv0v.s3.amazonaws.com",
+                  "Description": "Name of S3 bucket to hold website content"
+                },
+                {
+                  "OutputKey": "WebsiteURL",
+                  "OutputValue": "http://ask-mycactus-default-skillstack-16-s3webappbucket-4r70zfaibv0v.s3-website-us-east-1.amazonaws.com",
+                  "Description": "URL for website hosted on S3"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "default": {
+      "skillId": "amzn1.ask.skill.9a3a7e6d-d187-497a-a684-20963e6c16b1",
+      "skillMetadata": {
+        "lastDeployHash": "6amStwi/4SWIksyE6Lq0DjMxrBc="
+      }
+    }
+  }
+}
