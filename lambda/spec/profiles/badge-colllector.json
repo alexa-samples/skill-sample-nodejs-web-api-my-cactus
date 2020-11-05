@@ -3,31 +3,30 @@
       "waterLevel": 5,
       "healthLevel": 100,
       "dayOfBirth": 1595974111113,
-      "daysAlive": 0,
+      "daysAlive": 2,
       "blindState": "open",
       "lastUpdated": 1595974111113,
-      "name": "Sharpie Sharp",
-      "voice": "Brian"
+      "name": "Sharpie Sharp"
     },
     "lifeTime": {
       "waterUnits": 10
     },
     "unlockedBadges": {
       "waterUnits": [],
-      "earlyBird": false,
-      "nightOwl": false,
+      "earlyBird": true,
+      "nightOwl": true,
       "durations": {
-        "1": false,
-        "3": false,
-        "7": false,
-        "14": false,
-        "30": false,
-        "90": false,
-        "180": false,
-        "365": false
+        "1": true,
+        "3": true,
+        "7": true,
+        "14": true,
+        "30": true,
+        "90": true,
+        "180": true,
+        "365": true
       },
-      "helicopterParent": false,
-      "lostAllBadges": true
+      "helicopterParent": true,
+      "lostAllBadges": false
     },
     "timesChecked": 3,
     "latestInteraction": 1595974912371,

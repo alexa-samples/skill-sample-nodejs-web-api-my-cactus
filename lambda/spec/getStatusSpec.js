@@ -5,7 +5,6 @@ const statusUtil = require('../src/statusUtil');
 describe('getStatusNeeds', function() {
     it('should need water', function() {
         const needWaterProfile = require('./profiles/negative-water-postive-health.json');
-
         const status = statusUtil.getStatus(needWaterProfile);
 
         expect(status.needs.water).toBe(true)

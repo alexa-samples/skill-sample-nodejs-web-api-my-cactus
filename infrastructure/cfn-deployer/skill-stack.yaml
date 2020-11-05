@@ -42,8 +42,11 @@ Resources:
   S3WebAppBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
-    Properties:
-      AccessControl: PublicRead
+  S3OriginAccessID:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties: 
+      CloudFrontOriginAccessIdentityConfig: 
+        Comment: Origin Access Identity for S3. 
   CloudfrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -59,8 +62,10 @@ Resources:
         Enabled: true
         Origins:
           - DomainName: !GetAtt [S3WebAppBucket, DomainName]
-            CustomOriginConfig: 
-              OriginProtocolPolicy: match-viewer
+            S3OriginConfig : 
+              OriginAccessIdentity: !Sub
+                - origin-access-identity/cloudfront/${originAccessParam}
+                - originAccessParam: !Ref S3OriginAccessID
             Id: WebAppCloudfrontDistribution
   AlexaSkillFunction:
     Type: AWS::Lambda::Function

@@ -7,6 +7,9 @@ const util = require('./util.js');
 const statusUtil = require('./src/statusUtil');
 const badgeUtil = require('./src/badgeUtil');
 const profileUtil = require('./src/profileUtil');
+const ssmlUtil = require('./src/ssmlUtil');
+
+const timeOfDay = require('./src/timeOfDay');
 
 const moment = require('moment-timezone');
 
@@ -14,7 +17,8 @@ const SOUND_FX = require('./src/soundFX');
 
 // BIG TODOS:
 
-// 1. SSML additions 
+// 0. SSML additions - has needs status = might need to rethink what SICK means
+// 1. Refactor new timeOfDayFunction into a module with isItDaylight
 
 // Bug Bash
 
@@ -39,11 +43,11 @@ const LaunchRequestHandler = {
         let speakOutput = `${SOUND_FX.STARTUP_TONE} `;
         speakOutput += 'Your shelf is empty, ';
         speakOutput += 'but <amazon:emotion name="excited" intensity="medium">';
-        speakOutput += 'don\’t despair;</amazon:emotion> <break time=".5s"/>';
-        speakOutput += 'I\’m here to pair you with the right prickly pear; ';
+        speakOutput += 'don\'t despair;</amazon:emotion> <break time=".5s"/>';
+        speakOutput += 'I\'m here to pair you with the right prickly pear; ';
         speakOutput += '<break time=".5s"/>Water and light are what it ';
         speakOutput += 'needs;<break time=".5s"/>';
-        speakOutput += "Treat this succulent well, and they’ll reward your "; 
+        speakOutput += "Treat this succulent well, and they'll reward your "; 
         speakOutput += 'good deeds!<break time=".1s"/> ';
         speakOutput += 'To choose just the right cactus that needs ';
         speakOutput += '<amazon:emotion name="excited" intensity="medium">your ';
@@ -57,7 +61,7 @@ const LaunchRequestHandler = {
         speakOutput += reprompt;
         conditionallyLaunchWebApp(handlerInput);
         handlerInput.responseBuilder.speak(ssmlWrapDomain(speakOutput));
-            
+        
         if(isHTMLCapableFireTV(handlerInput)) {
             return handlerInput.responseBuilder.getResponse();
         }
@@ -111,34 +115,35 @@ function isHTMLCapableFireTV(handlerInput) {
 const HasCactusLaunchRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest'
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
     
         const attributesManager = handlerInput.attributesManager;
         let profile = attributesManager.getSessionAttributes();
         
+        let prompt = " You can open or close the blinds, water the cactus, check it's status, or check your badges. What would you like to do?"
         const status = statusUtil.getStatus(profile);
-        
-        if (!status.alive) {            
+
+        if (!status.alive) {
             profile = profileUtil.cleanUpCactus(profile);
+
+            prompt = '';
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);   
-        }
+        }        
         
         conditionallyLaunchWebApp(handlerInput);
-        handlerInput.responseBuilder.speak(status.message);
+        handlerInput.responseBuilder.speak(status.message + prompt);
         
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
+        if(!isHTMLCapableFireTV(handlerInput) && status.reprompt !== '') {
+            handlerInput.responseBuilder.reprompt(status.reprompt + prompt)    
         }
 
-        return handlerInput.responseBuilder
-            .reprompt(status.reprompt)
-            .getResponse();
+        return handlerInput.responseBuilder.getResponse();            
     }
 };
 
@@ -146,7 +151,7 @@ const hasCactusCaptureDestinationHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CaptureDestination'
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput){
         handlerInput.responseBuilder.speak('We already have a cactus')
@@ -173,6 +178,9 @@ const CaptureDestinationHandler = {
         
         const profile = getProfile(handlerInput);
         const name = await getRandomName();
+        
+        profile.cactus = profileUtil.defaultCactus(profile.timeZone);
+        console.log('initializing cactus', profile);
 
         profile.cactus.name = name.replace(/"/g,"");
         profile.cactus.voice = util.getRandomItemFromList(["Brian", "Emma"]);
@@ -190,8 +198,8 @@ const CaptureDestinationHandler = {
         speakOutput += 'I found the <prosody pitch="high">perfect</prosody> ';
         speakOutput += '<prosody volume="loud">cactus for you!</prosody> ';
         speakOutput += `Meet ${name}. They need water, and sunlight to thrive. `; 
-        speakOutput += '<prosody rate="110%">They’re just a sprout right now, ';
-        speakOutput += 'but keep them happy and they’ll grow a ';
+        speakOutput += '<prosody rate="110%">They\'re just a sprout right now, ';
+        speakOutput += 'but keep them happy and they\'ll grow a ';
         speakOutput += '<prosody pitch="high">little</prosody> each day. ';
         speakOutput += '</prosody> <break time="1s"/><prosody rate="110%">You ';
         speakOutput += 'can ask me to water your cactus; but not ';
@@ -199,10 +207,9 @@ const CaptureDestinationHandler = {
         speakOutput += '<prosody pitch="high">too much!</prosody></prosody> ';
         speakOutput += 'Or you can ask me to open and close the blinds. ';
         speakOutput += `<prosody rate="110%">${name} needs lots of sun, but `;
-        speakOutput += 'they’ll get <prosody pitch="high">chilly</prosody> at ';
-        speakOutput += 'night if you don’t close them!</prosody> ';
+        speakOutput += 'they\'ll get <prosody pitch="high">chilly</prosody> at ';
+        speakOutput += 'night if you don\'t close them!</prosody> ';
 
-    
         // let speakOutput = `${SOUND_FX.DESTINATION_TONE} I found the perfect cactus for you. `;
         // speakOutput += `Meet ${name}. `;
         // speakOutput += 'They need water and sunlight to thrive. ';
@@ -240,6 +247,21 @@ const CaptureDestinationHandler = {
     }
 };
 
+// TODO: refactor and move to a different file - does this belong in the status util? 
+// Maybe we need an action util?
+const DRINK_MESSAGES = [
+    '<emphasis level="strong">Ah!</emphasis> That\'s <prosody pitch="high">refreshing!</prosody>',
+    '<prosody rate="90%">That <prosody pitch="+20%">water</prosody> is <prosody pitch="+20%">refreshing</prosody> stuff.</prosody>',
+    '<prosody rate="90%"><prosody pitch="+20%">Ah!</prosody> That hit the <prosody pitch="+20%">Spot!</prosody></prosody>',
+    '<prosody rate="90%"><prosody pitch="+20%">Thanks. </prosody>I\'m feeling like a fish in <prosody pitch="+20%">water again!</prosody></prosody>',
+    '<prosody rate="90%">It\'s good to <prosody pitch="+20%">feel wet </prosody>behind <prosody pitch="+20%">my ears again!</prosody></prosody>',
+    '<prosody rate="90%"><prosody pitch="+20%">Ah!</prosody> Even <prosody pitch="+20%">cacti</prosody></prosody> need <prosody pitch="+20%"> a shower</prosody> sometimes.',
+    '<prosody rate="90%"><prosody pitch="+20%">Thank you!</prosody> I feel <prosody pitch="+20%">quenched</prosody></prosody> now!',
+    '<prosody rate="90%">Those <prosody pitch="+20%">showers sure beat </prosody> flash floods <prosody pitch="+20%"> on the prairie!</prosody></prosody>',
+    '<prosody rate="90%">Even a <prosody pitch="+20%">cactus</prosody> needs a<prosody pitch="+20%"> drink sometimes! Thanks pal!</prosody></prosody>',
+    '<prosody rate="90%">I feel like an <prosody pitch="+20%">oasis</prosody> in a<prosody pitch="+20%"> desert now! Thank you!</prosody></prosody>'
+];
+
 const WaterCactusIntentHandler = {
     canHandle(handlerInput) { // Check for existence of HTML Message OR an intent Request and perform the same actions.
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -252,21 +274,30 @@ const WaterCactusIntentHandler = {
         
         profile.cactus.waterLevel += WATER_INCREMENT;
         profile.lifeTime.waterUnits += WATER_INCREMENT;
-        
-        let speakOutput = `${SOUND_FX.WATER} ${SOUND_FX.SLURP} Thanks. I'm feeling like a fish in water again.`;
+    
+        let speakOutput = `${SOUND_FX.WATER} ${SOUND_FX.SLURP} `;
 
         const status = statusUtil.getStatus(profile);
 
+        //TODO: think about a different drink sound effect when the cactus is overwatered
         //TODO: talk with Alison about warning messages about over watering 
         //TODO: figure out max waterLevel based upon cactus size (no hardcoding to 20)
         if (!status.alive) {
             profile = profileUtil.cleanUpCactus(profile);
+            speakOutput = status.message;
             
             const attributesManager = handlerInput.attributesManager;
             attributesManager.setPersistentAttributes(profile);
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);               
             // TODO: investigate what to do about latestInteraction
+
+            speakOutput += status.message;
+        } else {
+            speakOutput += ssmlUtil.wrapCactusVoice(profile, util.getRandomItemFromList(DRINK_MESSAGES));
+            if(status.needs.water || status.needs.comfort) {
+                speakOutput += status.reprompt;
+            }
         }
         
         const attributesManager = handlerInput.attributesManager;
@@ -284,14 +315,18 @@ const WaterCactusIntentHandler = {
                 }
             });
         }
-        handlerInput.responseBuilder.speak(status.message)
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
-        }
 
-        return handlerInput.responseBuilder
-            .reprompt(status.reprompt)
-            .getResponse();
+        handlerInput.responseBuilder.speak(speakOutput)
+
+        if(!isHTMLCapableFireTV(handlerInput)) {
+            if ( !status.alive || status.needs.water || status.needs.comfort) {
+                handlerInput.responseBuilder.reprompt(status.reprompt);
+            } else {
+                handlerInput.responseBuilder.withShouldEndSession(true);
+            }
+        }
+        
+        return handlerInput.responseBuilder.getResponse();
     }
 }
 
@@ -299,7 +334,7 @@ const HasCactusYesIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.YesIntent'
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         handlerInput.responseBuilder.speak('You already have a cactus.')
@@ -328,7 +363,7 @@ const DeadCactusNoIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent'
-            && !getProfile(handlerInput).cactus.name;
+            && !getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         let speakOutput = "Ok. I'll give you time to grieve. I have lots "; 
@@ -346,7 +381,7 @@ const HasCactusNoIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.NoIntent'
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         handlerInput.responseBuilder.speak("You already have a cactus that's alive and well. You water the water the cactus, or open and close the blinds. Which will it be?")
@@ -373,6 +408,8 @@ const WebAppCloudLogger = {
         const {
             messageQueue
         } = handlerInput.requestEnvelope.request.message;
+        console.log("WebAppCloudLogger request: " + JSON.stringify(handlerInput.requestEnvelope.request));
+
         messageQueue.forEach(message => {
             const {
                 level,
@@ -452,7 +489,7 @@ const ShowBadgesIntentHandler = {
 
 const GetStatusIntentHandler = {
     canHandle(handlerInput) {
-        return getProfile(handlerInput).cactus.name && (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+        return getProfile(handlerInput).cactus && (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'GetStatusIntent') 
             || (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
             && getMessageIntent(handlerInput.requestEnvelope) === 'GetStatusIntent');
@@ -477,14 +514,18 @@ const GetStatusIntentHandler = {
                 }
             });
         }
+
         handlerInput.responseBuilder.speak(status.message)
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
+
+        if(!isHTMLCapableFireTV(handlerInput)) {
+            if ( !status.alive || status.needs.water || status.needs.comfort) {
+                handlerInput.responseBuilder.reprompt(status.reprompt);
+            } else {
+                handlerInput.responseBuilder.withShouldEndSession(true);
+            }
         }
         
-        return handlerInput.responseBuilder
-            .reprompt(status.reprompt)
-            .getResponse();
+        return handlerInput.responseBuilder.getResponse();
     }
 };
 
@@ -504,23 +545,31 @@ const OpenBlindsIntentHandler = {
     }
 };
 
+const OPEN_BLINDS_MESSAGES = [
+    '<prosody rate="90%">Let there be <prosody pitch="+20%">light!</prosody></prosody>',
+    '<prosody rate="90%">Hello<prosody pitch="+20%"> sun shine!</prosody></prosody>',
+    '<prosody rate="90%">Thanks for being my <prosody pitch="+20%">sun shine!</prosody></prosody>',
+    '<prosody rate="90%">Ah. Sweet <prosody pitch="+20%">warmth!</prosody></prosody>. Thank you.',
+    '<prosody rate="90%">I better get my <prosody pitch="+20%">sunglasses!</prosody></prosody>', 
+];
+
 const HasCactusOpenBlindsIntentHandler = {
     canHandle(handlerInput) {
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'OpenBlindsIntent') ||
             (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
             && getMessageIntent(handlerInput.requestEnvelope) === 'OpenBlindsIntent')
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         
-        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already open.`;
+        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already open. `;
         
         const profile = getProfile(handlerInput);
         
         if (profile.cactus.blindState !== 'open') {
             
-            speakOutput = `${SOUND_FX.SHORT_CHIME} I better get my sunglasses`;
+            speakOutput = `${SOUND_FX.SHORT_CHIME} ${SOUND_FX.BIRD_FOREST_02} ${util.getRandomItemFromList(OPEN_BLINDS_MESSAGES)} `;
             
             profile.cactus.blindState = "open";    
             
@@ -530,6 +579,10 @@ const HasCactusOpenBlindsIntentHandler = {
         
             attributesManager.setSessionAttributes(profile);            
         }
+
+        const status = statusUtil.getStatus(profile);
+
+        speakOutput += status.message;
         
         if(supportsHTMLInterface(handlerInput)) {
             handlerInput.responseBuilder.addDirective({
@@ -541,15 +594,30 @@ const HasCactusOpenBlindsIntentHandler = {
                 }
             });
         }
+
         handlerInput.responseBuilder.speak(speakOutput)
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
+
+        if(!isHTMLCapableFireTV(handlerInput)) {
+            if ( !status.alive || status.needs.water || status.needs.comfort) {
+                handlerInput.responseBuilder.reprompt(status.reprompt);
+            } else {
+                handlerInput.responseBuilder.withShouldEndSession(true);
+            }
         }
-        
-        return handlerInput.responseBuilder
-            .reprompt(FALLBACK_REPROMPT)
-            .getResponse();
+
+        return handlerInput.responseBuilder.getResponse();
     }
+
+    //     handlerInput.responseBuilder.speak(speakOutput)
+    //     if(isHTMLCapableFireTV(handlerInput)) {
+    //         return handlerInput.responseBuilder.getResponse();
+    //     }
+        
+    //     // TODO: investigate if we should use a different reprompt string 
+    //     return handlerInput.responseBuilder
+    //         .reprompt(FALLBACK_REPROMPT)
+    //         .getResponse();
+    // }
 }
 
 const CloseBlindsIntentHandler = {
@@ -562,22 +630,30 @@ const CloseBlindsIntentHandler = {
     }
 };
 
+const CLOSE_BLINDS_MESSAGES = [
+    '<prosody pitch="high">Hey! </prosody><prosody rate="115%"><prosody pitch="x-high">who</prosody> turned out <emphasis level="strong">all</emphasis> the <prosody pitch="high">lights?</prosody></prosody>',
+    '<prosody rate="90%">I guess it\'s time to <prosody pitch="+20%">go to bed.</prosody> Now if only I had a <prosody pitch="+20%">pillow.</prosody></prosody>',
+    'Did it get dark in here suddenly?',
+    '<prosody rate="90%">I guess the <prosody pitch="+20%">sun</prosody> will come out <prosody pitch="+20%">tomorrow!</prosody></prosody>',
+    '<prosody rate="90%">Well it\'s no scenic <prosody pitch="+20%">sunset,</prosody>but I guess that<prosody pitch="+20%">works too!</prosody></prosody>'
+];
+
 const HasCactusCloseBlindsIntentHandler = {
     canHandle(handlerInput) {
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CloseBlindsIntent')
             || (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
             && getMessageIntent(handlerInput.requestEnvelope) === 'CloseBlindsIntent')
-            && getProfile(handlerInput).cactus.name;
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         
-        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already closed.`;
+        let speakOutput = `${SOUND_FX.BOING} But ... the blinds are already closed. `;
         
         const profile = getProfile(handlerInput);
         
         if (profile.cactus.blindState !== "closed") {
-            speakOutput = `${SOUND_FX.SHORT_CHIME} Hey who turned out all the lights?`;
+            speakOutput = `${SOUND_FX.SHORT_CHIME} ${util.getRandomItemFromList(CLOSE_BLINDS_MESSAGES)} `;
         
             profile.cactus.blindState = "closed";
             
@@ -586,6 +662,10 @@ const HasCactusCloseBlindsIntentHandler = {
             attributesManager.savePersistentAttributes();
             attributesManager.setSessionAttributes(profile);            
         }
+
+        const status = statusUtil.getStatus(profile);
+
+        speakOutput += status.message;
         
         if(supportsHTMLInterface(handlerInput)) {
             handlerInput.responseBuilder.addDirective({
@@ -597,13 +677,17 @@ const HasCactusCloseBlindsIntentHandler = {
                 }
             });
         }
+
         handlerInput.responseBuilder.speak(speakOutput)
-        if(isHTMLCapableFireTV(handlerInput)) {
-            return handlerInput.responseBuilder.getResponse();
+
+        if(!isHTMLCapableFireTV(handlerInput)) {
+            if ( !status.alive || status.needs.water || status.needs.comfort) {
+                handlerInput.responseBuilder.reprompt(status.reprompt);
+            } else {
+                handlerInput.responseBuilder.withShouldEndSession(true);
+            }
         }
-        
         return handlerInput.responseBuilder
-            .reprompt(FALLBACK_REPROMPT)
             .getResponse();
     }
 }
@@ -626,25 +710,23 @@ const HelpIntentHandler = {
     },
     handle(handlerInput) {
 
-        // TODO: Ask Alison for a better message for the case where they ask for
-        // help before the cactus has been created.
         let speakOutput = "This is my cactus. A cactus raising simulation game. ";
-
-        speakOutput = "I have lots of cacti in need of care! ";
-        speakOutput += "To match you with the right one for you to raise as your own, though, ";
-        speakOutput += "I’ll need to know a bit about you. ";
-        speakOutput += "If you could go anywhere in the world, where would you visit? ";
-
+        speakOutput += "I have lots of cacti in need of care! To match you ";
+        speakOutput += "with the right one for you to raise as your own though, ";
+        speakOutput += "I'll need to know a bit about you. If you could go ";
+        speakOutput += "anywhere in the world, <prosody volume=\"x-loud\">where ";
+        speakOutput += "would you visit?</prosody>";
+        
         const profile = getProfile(handlerInput);
 
-        if (profile.cactus.name) {
-            speakOutput = `You’re raising a cactus named ${profile.cactus.name}. `;
+        if (profile.cactus) {
+            speakOutput = `You're raising a cactus named ${profile.cactus.name}. `;
             speakOutput += "You can open the blinds during the day to make sure they get enough sunshine, "
-            speakOutput += "but don’t forget to close them at night or they’ll get cold! "        
+            speakOutput += "but don't forget to close them at night or they'll get cold! "        
             speakOutput += "Pay close attention to their water, too. "
             speakOutput += "Over-watering is just as bad as a drought! "            
         }
-        handlerInput.responseBuilder.speak(speakOutput)
+        handlerInput.responseBuilder.speak(ssmlWrapDomain(speakOutput));
         if(isHTMLCapableFireTV(handlerInput)) {
             return handlerInput.responseBuilder.getResponse();
         }
@@ -654,6 +736,60 @@ const HelpIntentHandler = {
             .getResponse();
     }
 };
+
+const NIGHT_GOODBYE = [
+    "Have a splendid night!",
+    "Good night!",
+    "Good evening to you then!",
+    "I have lots of cacti in need of care! To match you with the right one for you to raise as your own, though, I'll need to know a bit about you. If you could go anywhere in the world, where would you visit?",
+    "Good night then.",
+    "It was nice chatting with you today. Goodbye.",
+    "Sweet dreams!",
+    "Have a peaceful evening!",
+    "Pleasure chatting with you this evening. Night!",
+    "Good night, sleep tight!",
+];
+
+const AFTERNOON_GOODBYE = [
+    "See you later alligator!",
+    "Bon voyage!",
+    "Until next time! Bye!",
+    "Nice talking to you!",
+    "Don't forget to stop and smell the roses! Bye!",
+    "Good chatting with you. See you later.",
+    "Thanks for visiting!",
+    "Hasta la vista, baby!",
+    "It was lovely seeing you, as always!",
+    "Have a splendid afternoon. Bye bye!",
+];
+
+const MORNING_GOODBYE = [
+    "Morning Have an excellent day, my friend!",
+    "I hope you have a sunny day! Goodbye!",
+    "Have a glorious day!",
+    "Sending you sunny vibes for the day ahead of you! Goodbye!",
+    "Until next time, carpe diem!",
+    "Thanks for starting your day with me!",
+    "It's always a pleasure starting my day with you! See ya!",
+    "I wish you a bright day, my friend. Goodbye.",
+    "I can't wait to chat later. See ya!",
+    "Have a wonderful day buddy!",
+];
+
+const HAS_NEED_GOODBYE = [
+
+    "Come back soon to nurse [cactus name] back to health",
+    "[cactus name] could still use some attention. Come back soon!",
+    "Come back soon to check on [cactus name].",
+    "I'm sure [cactus name] would like to chat, but they're still not feeling well. Come back later to care for them.",
+    "[cactus name] will miss you.",
+    "[cactus name] isn't feeling well enough to chat any more. Goodbye.",
+    "Come back soon to care for [cactus name]",
+    "[cactus name] will be looking forward to some TLC later. Goodbye.",
+    "Ok. Come back to check on [cactus name] again soon!",
+];
+
+
 const CancelAndStopIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -661,9 +797,43 @@ const CancelAndStopIntentHandler = {
                 || Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.StopIntent');
     },
     handle(handlerInput) {
-        const speakOutput = 'Goodbye!';
+
+        const profile = getProfile(handlerInput);
+        const tod = timeOfDay(moment(), profile.timeZone);
+        let speakOutput = '';
+
+        const status = statusUtil.getStatus(profile);
+
+        if (status.alive && !status.needs.comfort && !status.needs.water)
+        {
+            switch (tod) {
+                case -1: // Night
+                    speakOutput = util.getRandomItemFromList(NIGHT_GOODBYE);
+                    break;
+                case 0: // Afternoon
+                    speakOutput = util.getRandomItemFromList(AFTERNOON_GOODBYE);
+                    break;
+                case 1: // Morning
+                    speakOutput = util.getRandomItemFromList(MORNING_GOODBYE);
+                    break;
+                default:
+                    speakOutput = "Goodbye!";
+                    console.log('Unexpected goodbye message', JSON.stringify(handlerInput.requestEnvelope.request))
+                    break;
+            }
+            speakOutput = ssmlUtil.wrapCactusVoice(profile, speakOutput);
+        } else if(status.alive) {
+            speakOutput = util.getRandomItemFromList(HAS_NEED_GOODBYE)
+                .replace("[cactus name]", profile.cactus.name);
+        } else {
+            // cactus is dead and the user said, "stop, cancel, etc.
+            // TODO: confirm with Alison what should be said here.
+            speakOutput = "Goodbye for now.";
+        }
+
         return handlerInput.responseBuilder
             .speak(speakOutput)
+            .withShouldEndSession(true)
             .getResponse();
     }
 };
@@ -723,7 +893,7 @@ const ErrorHandler = {
         return true;
     },
     handle(handlerInput, error) {
-        console.log(`~~~~ Error handled: ${error.stack}`);
+        console.error(`~~~~ Error handled: ${error.stack}`);
         const speakOutput = `<amazon:emotion name="disappointed" intensity="high">Aww no, The code is broken.</amazon:emotion>`;
         handlerInput.responseBuilder.speak(speakOutput)
         if(isHTMLCapableFireTV(handlerInput)) {
@@ -745,7 +915,7 @@ const NewSessionRequestInterceptor = {
     
     const profile = getProfile(handlerInput);
 
-    if (handlerInput.requestEnvelope.session.new && profile.cactus.name) {
+    if (handlerInput.requestEnvelope.session.new && profile.cactus) {
         
         const currentDateTime = moment.tz(profile.timeZone);
         const latestInteraction = moment(profile.latestInteraction).tz(profile.timeZone);
@@ -763,8 +933,7 @@ const NewSessionRequestInterceptor = {
   }
 };
 
-// TODO: rename to LoadProfileRequestInterceptor
-const loadProfileInterceptor = {
+const LoadProfileRequestInterceptor = {
     async process(handlerInput) {
         console.log("WHOLE REQUEST: " + JSON.stringify(handlerInput.requestEnvelope));
         const attributesManager = handlerInput.attributesManager;
@@ -773,13 +942,12 @@ const loadProfileInterceptor = {
 
         const deviceId = Alexa.getDeviceId(handlerInput.requestEnvelope);
         const timeZone = await util.getTimeZone(handlerInput, deviceId);
-        console.log("loadProfileInterceptor - timezone", timeZone);
+        console.log("LoadProfileRequestInterceptor - timezone", timeZone);
         
         // If no profile initiate a new one - first interaction with skill
-        if (!profile.hasOwnProperty("cactus")) {
-            profile = profileUtil.defaultProfile(timeZone);
-            console.log('initializing profile', profile);
-        } else {
+        if(!profile.hasOwnProperty("lifeTime")) {
+            profile = profileUtil.defaultProfile()
+        } else if (profile.cactus) { // Check if there is a cactus before compute status
             profile.cactus = statusUtil.computeStatus(profile, moment(), timeZone);
             badgeUtil.evaluate(profile, moment());
         }
@@ -787,7 +955,7 @@ const loadProfileInterceptor = {
         profile.timeZone = timeZone;
         
         attributesManager.setSessionAttributes(profile);
-        console.log("loadProfileInterceptor", JSON.stringify(attributesManager.getSessionAttributes()));
+        console.log("LoadProfileRequestInterceptor", JSON.stringify(attributesManager.getSessionAttributes()));
     }
 }
 
@@ -803,6 +971,12 @@ const UpdateLatestInteractionResponseInterceptor = {
         handlerInput.attributesManager.savePersistentAttributes();
     }
 }
+
+const LogResponseJsonResponseInterceptor = {
+    process(handlerInput) {
+        console.log("Response JSON:", JSON.stringify(handlerInput.responseBuilder.getResponse()));
+    }
+};
 
 // "YYYY-MM-DD HH:mm:ss"
 
@@ -824,6 +998,7 @@ const getRandomName = async function() {
 }
 
 const https = require('https');
+const { stat } = require('fs');
 
 function getHTTP(options) {
   return new Promise(((resolve, reject) => {
@@ -894,11 +1069,12 @@ exports.handler = Alexa.SkillBuilders.custom()
         IntentReflectorHandler, // make sure IntentReflectorHandler is last so it doesn't override your custom intent handlers
     )
     .addRequestInterceptors(
-        loadProfileInterceptor,
+        LoadProfileRequestInterceptor,
         NewSessionRequestInterceptor
     )
     .addResponseInterceptors(
-        UpdateLatestInteractionResponseInterceptor
+        UpdateLatestInteractionResponseInterceptor,
+        LogResponseJsonResponseInterceptor
     )
     .addErrorHandlers(
         ErrorHandler,

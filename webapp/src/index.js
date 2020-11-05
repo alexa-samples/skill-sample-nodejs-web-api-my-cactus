@@ -6,7 +6,8 @@ const OrbitControls = require('three/examples/jsm/controls/OrbitControls');
 const selector = require('./selector');
 const screenShake = require('./screenShake');
 const windowManager = require('./guiManager');
-const mockData = require('./mockStartupData.json');
+const mockData = require('./mockData/mockStartupData.json');
+// const mockData = require('./mockData/mockNoCactusData.json');
 const messageSender = require('./messageSender.js');
 
 const blinds = require('./blinds.js');
@@ -197,7 +198,7 @@ function setupAlexa() {
                 }
         
                 console.log("Game State: " + JSON.stringify(message.gameState));
-                if(message.gameState.newBadge) {
+                if(message.gameState.unlockedBadges && message.gameState.unlockedBadges.newBadge) {
                     console.log("Showing new badge");
                     windowManager.showNewBadge(message.gameState.unlockedBadges.latestKey, message.gameState.unlockedBadges.latest);
                 }
@@ -402,25 +403,15 @@ function refreshGameState(dataPayload) {
         blinds.init(blindsOpen, debugLevel);
         cactus.init(-1, debugLevel);
     }
-    //initialize state of visible DOM elements not controlled by a class.
-    nameElement.textContent = cactusState.name;
-    waterStatusBar.max = cactusState.waterMax;
-    waterStatusBar.value = cactusState.waterLevel;
-    healthSatusBar.value = cactusState.healthLevel;
-
-    //initialize state of objects
-    blinds.init(cactusState, debugLevel);
-    cactus.init(cactusState, debugLevel);
-
+    
     //TODO add a refresh to the lighting for the sun
-
     windowManager.refreshBadges(dataPayload.unlockedBadges);
     
     // Adding the background texture.
     let bgTexture;
-    if(cactusState.happiness === 1) {
+    if(cactusState && cactusState.happiness === 1) {
         bgTexture = new THREE.TextureLoader().load(backgroundHealthyAsset);
-    } else if(cactusState.happiness === 0) {
+    } else if(cactusState && cactusState.happiness === 0) {
         bgTexture = new THREE.TextureLoader().load(backgroundNeutralAsset);
     } else {
         bgTexture = new THREE.TextureLoader().load(backgroundSickAsset);
@@ -490,6 +481,21 @@ function setUpScene() {
 
     windowManager.hideLoadingScreen();
 }
+
+// Bad, should instead call the module defined in the skill package, 
+// but we need a nice way to share modules between
+// front and backend code. TODO share the module used on backend
+function isItDaylight(timeStamp, timeZone) {
+    let isDayTime = false;
+    const time =  moment(timeStamp).tz(timeZone);
+    
+    // 8:00 - 19:59  = day
+    // 20:00 - 7:59 = night
+    if (time.hour() >= 8 && time.hour() < 20 ) {
+        isDayTime = true;
+    }
+    return isDayTime;
+};
 
 /**
  * returns a number from 0 - 2.5 for the strength of the directional light.
