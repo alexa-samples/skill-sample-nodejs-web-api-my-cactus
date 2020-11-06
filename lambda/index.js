@@ -974,6 +974,7 @@ const UpdateLatestInteractionResponseInterceptor = {
 
 const LogResponseJsonResponseInterceptor = {
     process(handlerInput) {
+        //TODO figure out why this response is empty on the LaunchRequest response.
         console.log("Response JSON:", JSON.stringify(handlerInput.responseBuilder.getResponse()));
     }
 };

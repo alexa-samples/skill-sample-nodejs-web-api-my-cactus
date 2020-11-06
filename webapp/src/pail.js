@@ -8,7 +8,7 @@ module.exports = {
     update(delta) {
         canMixer.update(delta);
     },
-    init(startInfo, debugLevel) {
+    init(debugLevel) {
         this.debugLevel = debugLevel;
         //TODO Make glowing if low number
     },

@@ -8,6 +8,7 @@ const screenShake = require('./screenShake');
 const windowManager = require('./guiManager');
 const mockData = require('./mockData/mockStartupData.json');
 // const mockData = require('./mockData/mockNoCactusData.json');
+
 const messageSender = require('./messageSender.js');
 
 const blinds = require('./blinds.js');
@@ -140,14 +141,11 @@ function setupAlexa() {
         .then(async (args) => {
             const {
                 alexa,
-                message,
-                createExtensionsMessageProvider
+                message
             } = args;
             alexaClient = alexa;
             alexaLoaded = true;
             console.log(JSON.stringify("args: " + JSON.stringify(args)));
-
-            console.log("Capabilities: " + JSON.stringify(alexaClient.capabilities));
 
             //initialize our messageSender class
             messageSender.init(alexaClient);
