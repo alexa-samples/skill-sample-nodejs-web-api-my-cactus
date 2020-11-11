@@ -6,6 +6,12 @@ This skill uses the Alexa Web API for Games for 3D graphics on capable devices. 
 
 ![A Picture of the My Cactus Web Application running on a FireTV](https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/blob/master/myCactusScreenshot.png?raw=true)
 
+## Design Assets
+
+If you're interested in the design of the skill check out the [design assets](./design-assets) folder. There you'll find the storyboard that our VUI designer used to map out all the scenarios and a template for you to build your own storyboards using [Adobe XD](https://www.adobe.com/products/xd.html).
+
+We are streaming about this skill on the [AmazonAlexa Twitch](https://twitch.tv/amazonalexa) channel Wednesday & Friday @ 10AM PT. You can view prior episodes on demand on [twitch](https://www.twitch.tv/collections/S81yydlkRBY-Pw).
+
 ## Alexa Skill Usage Instructions
 
 This project is meant to be used with ASK CLI V2. There is AWS infrastructure involved and you will also need an AWS account for this. This uses the ASK CLI V2 cfn-deployer. The infrastructure is defined in [skill-stack.yaml](./infrastructure/cfn-deployer/skill-stack.yaml). The code is defined in the lambda directory. 

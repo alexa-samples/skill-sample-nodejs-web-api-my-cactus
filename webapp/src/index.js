@@ -8,6 +8,7 @@ const screenShake = require('./screenShake');
 const windowManager = require('./guiManager');
 const mockData = require('./mockData/mockStartupData.json');
 // const mockData = require('./mockData/mockNoCactusData.json');
+
 const messageSender = require('./messageSender.js');
 
 const blinds = require('./blinds.js');
@@ -101,16 +102,16 @@ function update() {
     const selectedObjSet = selector.getSelectedObjSet();
     if(cactus.shouldClick(selectedObjSet)) {
         screenShake.shake(camera, 500, 200, 200);//TODO figure out or cut
-        cactus.onClick(alexa);
+        cactus.onClick(alexaClient);
     }
     if(blinds.shouldClick(selectedObjSet)) {
-        blinds.onClick(alexa, debugElement);
+        blinds.onClick(alexaClient, debugElement);
     }
     if(pail.shouldClick(selectedObjSet)) {
-        pail.onClick(alexa, debugElement);
+        pail.onClick(alexaClient, debugElement);
     }
     if(spider.shouldClick(selectedObjSet)) {
-        spider.onClick(alexa);
+        spider.onClick(alexaClient);
     }
 
     controls.update(); // TODO fix this later. Screen shake does not play nice.
@@ -135,8 +136,9 @@ function update() {
  * Sets up the Alexa object and listeners.
  */
 function setupAlexa() {
+    console.log("Attempting to set up Alexa : " + JSON.stringify(Alexa));
     Alexa.create({version: '1.0'})
-        .then((args) => {
+        .then(async (args) => {
             const {
                 alexa,
                 message
@@ -145,10 +147,9 @@ function setupAlexa() {
             alexaLoaded = true;
             console.log(JSON.stringify("args: " + JSON.stringify(args)));
 
-            console.log("Capabilities: " + JSON.stringify(alexaClient.capabilities));
-
             //initialize our messageSender class
             messageSender.init(alexaClient);
+            messageSender.log("Capabilities: " + JSON.stringify(alexaClient.capabilities));
 
             if(debugLevel >= 1) {
                 console.log("Startup Alexa success. Logging device and memory info");
@@ -167,6 +168,7 @@ function setupAlexa() {
             }
 
             refreshGameState(message);
+
             //Start BG Music when we know it is an Alexa-enabled device.
             bgMusic.play();
             const time =  moment(message.latestInteraction).tz(message.timeZone);
@@ -236,13 +238,12 @@ function setupAlexa() {
             });
         })
         .catch(error => {
-            console.log(JSON.stringify(error));
             if(debugLevel >= 1) {
-                debugElement.appendChild(document.createTextNode('\nstartup failed, better message customer'));
+                debugElement.appendChild(document.createTextNode('\nstartup failed, for a reason: ' + JSON.stringify(error)));
 
                 infoElement.textContent = 'startup failed, Sorry, customer.';
             }
-            alexa = null;
+            alexaClient = null;
             const time =  moment(mockData.latestInteraction).tz(mockData.timeZone);
             refreshGameState(mockData);
             //Start BG Music when we know it is an Alexa-enabled device.
@@ -322,7 +323,7 @@ function init() {
     document.addEventListener("mousedown", domClick, true);
 
     badgeElement.onclick = function() {
-        if(alexa != null) {
+        if(alexaClient != null) {``
             alexaClient.skill.sendMessage({
                 intent:"ShowBadgesIntent",
                 clicked:"badgeButton"

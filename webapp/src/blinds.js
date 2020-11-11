@@ -1,39 +1,50 @@
-var blindsUpAction, blindsDownAction, blindsMixerUp, blindsMixerDown;
 var debugLevel;
 const THREE = require('three');
 const BLINDS_UP_ANIM = "animateBlindsUP";
 const BLINDS_DOWN_ANIM = "animateBlindsDown";
-let blindsOpen = false;
+let initializedData = false;
+let loadedVisual = false;
+
 const BLINDS_OBJ_NAME = "blinds";
 
 module.exports = {
     update(delta) {
-        blindsMixerUp.update(delta);
-        blindsMixerDown.update(delta);
+        this.blindsMixerUp.update(delta);
+        this.blindsMixerDown.update(delta);
     },
     init(blindsOpen, debugLevel) {
         this.debugLevel = debugLevel;
         this.blindsOpen = blindsOpen;
+        initializedData = true;
+        if(loadedVisual) {
+            this.safeInitVisual();
+        }
     },
     shouldClick(selectedObjSet) {
         return selectedObjSet.has(BLINDS_OBJ_NAME);
     },
     load(gltf) {
-        blindsMixerUp = new THREE.AnimationMixer(gltf.scene);
-        blindsMixerDown = new THREE.AnimationMixer(gltf.scene);
+        this.blindsMixerUp = new THREE.AnimationMixer(gltf.scene);
+        this.blindsMixerDown = new THREE.AnimationMixer(gltf.scene);
         let blindsUpClip = THREE.AnimationClip.findByName(gltf.animations, BLINDS_UP_ANIM);
         let blindsDownClip = THREE.AnimationClip.findByName(gltf.animations, BLINDS_DOWN_ANIM);
 
-        blindsUpAction = blindsMixerUp.clipAction(blindsUpClip);
-        blindsUpAction.clampWhenFinished = true;
-        blindsUpAction.loop = THREE.LoopOnce;
+        this.blindsUpAction = this.blindsMixerUp.clipAction(blindsUpClip);
+        this.blindsUpAction.clampWhenFinished = true;
+        this.blindsUpAction.loop = THREE.LoopOnce;
 
-        blindsDownAction = blindsMixerDown.clipAction(blindsDownClip);
-        blindsDownAction.clampWhenFinished = true;
-        blindsDownAction.loop = THREE.LoopOnce;
+        this.blindsDownAction = this.blindsMixerDown.clipAction(blindsDownClip);
+        this.blindsDownAction.clampWhenFinished = true;
+        this.blindsDownAction.loop = THREE.LoopOnce;
 
+        loadedVisual = true;
+        if(initializedData) {
+            this.safeInitVisual();
+        }
+    },
+    safeInitVisual() {
         //After the model has loaded, get it into the right state. 
-        if(blindsOpen) {
+        if(this.blindsOpen) {
             this.raise();
             console.log("raising blinds");
         } else {
@@ -43,13 +54,13 @@ module.exports = {
     },
     lower() {
         // blindsMixerDown.stopAllAction();
-        blindsDownAction.reset().play();
-        blindsOpen = false;
+        this.blindsDownAction.reset().play();
+        this.blindsOpen = false;
     },
     raise() {
         // blindsMixerUp.stopAllAction();
-        blindsUpAction.reset().play();
-        blindsOpen = true;
+        this.blindsUpAction.reset().play();
+        this.blindsOpen = true;
     },
     onClick(alexa, textElement) {
         const clickPromise = new Promise((resolve, reject) => {
@@ -57,15 +68,15 @@ module.exports = {
                 infoElement.textContent = "poked blinds";
                 console.log("Clicked Blinds");
             }
-            if(blindsOpen) {
+            if(this.blindsOpen) {
                 this.lower();
             } else {
                 this.raise();
             }
             if(alexa != null) {
                 alexa.skill.sendMessage({
-                    intent:blindsOpen? "OpenBlindsIntent" : "CloseBlindsIntent",
-                    clicked:"blinds"
+                    intent: this.blindsOpen? "OpenBlindsIntent" : "CloseBlindsIntent",
+                    clicked: "blinds"
                 },
                 function(messageSendResponse) {
                     textElement.appendChild(document.createTextNode("\n" + JSON.stringify(messageSendResponse)));
