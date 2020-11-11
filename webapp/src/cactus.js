@@ -1,13 +1,3 @@
-var cactusMixer, 
-    cactusBody, 
-    cactusArmLarge, 
-    cactusArmSmall, 
-    cactusFlower,
-    cactusDanceAction,
-    pot;
-//variables related to the cactus state
-var happyDays;
-
 const FLOWERING_AGE = 30;
 const SECOND_ARM_AGE = 20;
 const FIRST_ARM_AGE = 10;
@@ -23,39 +13,39 @@ const CLICKABLE_OBJS = [CACTUS_BODY_OBJ_NAME, CACTUS_LG_ARM_OBJ_NAME, CACTUS_SM_
 
 module.exports = {
     update(delta) {
-        cactusMixer.update(delta);
+        this.cactusMixer.update(delta);
 
         //CactusBody is a parent object of the other cactus pieces. Scaling scales ALL.
-        setObjScaleAndPosition(cactusBody, happyDays, FIRST_ARM_AGE);
-
+        setObjScaleAndPosition(this.cactusBody, this.happyDays, FIRST_ARM_AGE);
+        console.log("Happy days are: " + this.happyDays);
         //Set the correct things to visible
-        if(happyDays > FLOWERING_AGE) {
+        if(this.happyDays > FLOWERING_AGE) {
             //all is visible
-            cactusFlower.visible = true;
-            cactusBody.visible = true;
-            cactusArmSmall.visible = true;
-            cactusArmLarge.visible = true;
-        } else if(happyDays > SECOND_ARM_AGE) {
-            cactusBody.visible = true;
-            cactusFlower.visible = false;
-            cactusArmSmall.visible = true;
-            cactusArmLarge.visible = true;
-            setObjScaleAndPosition(cactusBody, FLOWERING_AGE, SECOND_ARM_AGE);
-        } else if(happyDays > FIRST_ARM_AGE) {
-            setObjScaleAndPosition(cactusBody, SECOND_ARM_AGE, FIRST_ARM_AGE);
-            cactusFlower.visible = false;
-            cactusBody.visible = true;
-            cactusArmSmall.visible = false;
-            cactusArmLarge.visible = true;
-        } else if (happyDays < 0) {
-            cactusBody.visible = false;
-            cactusFlower.visible = false;
-            cactusArmSmall.visible = false;
-            cactusArmLarge.visible = false;
+            this.cactusFlower.visible = true;
+            this.cactusBody.visible = true;
+            this.cactusArmSmall.visible = true;
+            this.cactusArmLarge.visible = true;
+        } else if(this.happyDays > SECOND_ARM_AGE) {
+            this.cactusBody.visible = true;
+            this.cactusFlower.visible = false;
+            this.cactusArmSmall.visible = true;
+            this.cactusArmLarge.visible = true;
+            setObjScaleAndPosition(this.cactusBody, FLOWERING_AGE, SECOND_ARM_AGE);
+        } else if(this.happyDays > FIRST_ARM_AGE) {
+            setObjScaleAndPosition(this.cactusBody, SECOND_ARM_AGE, FIRST_ARM_AGE);
+            this.cactusFlower.visible = false;
+            this.cactusBody.visible = true;
+            this.cactusArmSmall.visible = false;
+            this.cactusArmLarge.visible = true;
+        } else if (this.happyDays < 0) {
+            this.cactusBody.visible = false;
+            this.cactusFlower.visible = false;
+            this.cactusArmSmall.visible = false;
+            this.cactusArmLarge.visible = false;
         }
     },
     init(daysAlive, debugLevel) {
-        happyDays = daysAlive;
+        this.happyDays = daysAlive;
         this.debugLevel = debugLevel;
     },
     shouldClick(selectedObjSet) {
@@ -65,31 +55,27 @@ module.exports = {
         var scene = gltf.scene;
       
         //Set up our object references
-        cactusBody = scene.getObjectByName(CACTUS_BODY_OBJ_NAME);
-        // cactusBody.castShadow = true;
-        cactusArmLarge = cactusBody.getObjectByName(CACTUS_LG_ARM_OBJ_NAME);
-        cactusArmSmall = cactusArmLarge.getObjectByName(CACTUS_SM_ARM_OBJ_NAME);
-        cactusFlower = cactusArmLarge.getObjectByName(CACTUS_FLOWER_OBJ_NAME);
-        pot = scene.getObjectByName("pot");
+        this.cactusBody = scene.getObjectByName(CACTUS_BODY_OBJ_NAME);
+        this.cactusArmLarge = this.cactusBody.getObjectByName(CACTUS_LG_ARM_OBJ_NAME);
+        this.cactusArmSmall = this.cactusArmLarge.getObjectByName(CACTUS_SM_ARM_OBJ_NAME);
+        this.cactusFlower = this.cactusArmLarge.getObjectByName(CACTUS_FLOWER_OBJ_NAME);
+        this.pot = scene.getObjectByName("pot");
 
-        cactusMixer = new THREE.AnimationMixer(scene);
+        this.cactusMixer = new THREE.AnimationMixer(scene);
         const cactusDanceClip = gltf.animations[0];
-        cactusDanceAction = cactusMixer.clipAction(cactusDanceClip);
-        cactusDanceAction.setLoop(THREE.LoopPingPong, 2);
-        cactusDanceAction.play();
+        this.cactusDanceAction = this.cactusMixer.clipAction(cactusDanceClip);
+        this.cactusDanceAction.setLoop(THREE.LoopPingPong, 2);
+        this.cactusDanceAction.play();
 
         //Set up cactus
-        cactusArmSmall.visible = false;
-        cactusArmLarge.visible = false;
-        cactusFlower.visible = false;
+        this.cactusArmSmall.visible = false;
+        this.cactusArmLarge.visible = false;
+        this.cactusFlower.visible = false;
     },
     dance() {
-        cactusDanceAction.reset().play();
+        this.cactusDanceAction.reset().play();
     },
-    onClick(alexa) {
-        if(alexa !== null) {
-            cloudLog("Poked the cactus.");
-        }
+    onClick() {
         if(debugLevel >= 1) {
             infoElement.textContent = "poked cactus";
         }
