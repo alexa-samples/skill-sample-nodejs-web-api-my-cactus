@@ -1,4 +1,8 @@
 const THREE = require('three');
+// Replaces the shader chunk to work around known issue with ThreeJS and certain Alexa Hardware
+// see: https://developer.amazon.com/en-US/docs/alexa/web-api-for-games/known-issues.html#known-issues
+THREE.ShaderChunk['lights_fragment_begin'] = require('./threejsForks/lights_fragments_begin_replacement');
+
 const moment = require('moment-timezone');
 const GLTFLoader = require('three/examples/jsm/loaders/GLTFLoader');
 const OrbitControls = require('three/examples/jsm/controls/OrbitControls');
