@@ -21,10 +21,6 @@
                     "samples": []
                 },
                 {
-                    "name": "AMAZON.NavigateHomeIntent",
-                    "samples": []
-                },
-                {
                     "name": "CaptureDestination",
                     "slots": [
                         {
@@ -33,6 +29,7 @@
                         }
                     ],
                     "samples": [
+                        "the {destination}",
                         "I like {destination}",
                         "{destination}",
                         "I would like to go to {destination}"
@@ -42,13 +39,14 @@
                     "name": "WaterCactusIntent",
                     "slots": [],
                     "samples": [
+                        "water",
                         "give it some water",
                         "serve my cactus some water",
                         "quench my cacti",
                         "pour water on my cactus",
                         "let it rain",
                         "water it",
-                        "Water my cactus"
+                        "water my cactus"
                     ]
                 },
                 {
@@ -108,9 +106,69 @@
                 {
                     "name": "AMAZON.FallbackIntent",
                     "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
                 }
             ],
-            "types": []
+            "types": [
+                {
+                    "name": "AMAZON.City",
+                    "values": [
+                        {
+                            "name": {
+                                "value": "neptune"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "pluto"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "uranus"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "jupiter"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "saturn"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "mercury"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "mars"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "venus"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "earth"
+                            }
+                        },
+                        {
+                            "name": {
+                                "value": "moon"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     }
 }

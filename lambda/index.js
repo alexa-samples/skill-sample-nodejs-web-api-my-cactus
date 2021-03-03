@@ -262,12 +262,26 @@ const DRINK_MESSAGES = [
     '<prosody rate="90%">I feel like an <prosody pitch="+20%">oasis</prosody> in a<prosody pitch="+20%"> desert now! Thank you!</prosody></prosody>'
 ];
 
-const WaterCactusIntentHandler = {
-    canHandle(handlerInput) { // Check for existence of HTML Message OR an intent Request and perform the same actions.
+const WaterCactusIntent = {
+    canHandle(handlerInput) {
         return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'WaterCactusIntent') ||
+            (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST 
+            && getMessageIntent(handlerInput.requestEnvelope) === 'WaterCactusIntent')
+    },
+    handle(handlerInput) {
+
+        return LaunchRequestHandler.handle(handlerInput);
+    }
+};
+
+const HasCactusWaterCactusIntentHandler = {
+    canHandle(handlerInput) { // Check for existence of HTML Message OR an intent Request and perform the same actions.
+        return ((Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'WaterCactusIntent') ||
             (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
-            && getMessageIntent(handlerInput.requestEnvelope) === 'WaterCactusIntent');
+            && getMessageIntent(handlerInput.requestEnvelope) === 'WaterCactusIntent')) 
+            && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
         let profile = getProfile(handlerInput);
@@ -555,10 +569,10 @@ const OPEN_BLINDS_MESSAGES = [
 
 const HasCactusOpenBlindsIntentHandler = {
     canHandle(handlerInput) {
-        return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+        return ((Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'OpenBlindsIntent') ||
             (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
-            && getMessageIntent(handlerInput.requestEnvelope) === 'OpenBlindsIntent')
+            && getMessageIntent(handlerInput.requestEnvelope) === 'OpenBlindsIntent'))
             && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
@@ -640,10 +654,10 @@ const CLOSE_BLINDS_MESSAGES = [
 
 const HasCactusCloseBlindsIntentHandler = {
     canHandle(handlerInput) {
-        return (Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+        return ((Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'CloseBlindsIntent')
             || (Alexa.getRequestType(handlerInput.requestEnvelope) === MESSAGE_REQUEST
-            && getMessageIntent(handlerInput.requestEnvelope) === 'CloseBlindsIntent')
+            && getMessageIntent(handlerInput.requestEnvelope) === 'CloseBlindsIntent'))
             && getProfile(handlerInput).cactus;
     },
     handle(handlerInput) {
@@ -1055,7 +1069,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         LaunchRequestHandler,
         hasCactusCaptureDestinationHandler,
         CaptureDestinationHandler,
-        WaterCactusIntentHandler,
+        HasCactusWaterCactusIntentHandler,
+        WaterCactusIntent,
         WebAppCloudLogger,
         HasCactusOpenBlindsIntentHandler,
         OpenBlindsIntentHandler,
