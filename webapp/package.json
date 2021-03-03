@@ -16,7 +16,7 @@
   "dependencies": {
     "moment": "^2.27.0",
     "moment-timezone": "^0.5.31",
-    "three": "^0.115.0"
+    "three": "^0.125.0"
   },
   "devDependencies": {
     "exports-loader": "^0.7.0",
