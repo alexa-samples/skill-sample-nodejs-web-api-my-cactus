@@ -4,7 +4,7 @@ This is the repository for the my cactus simulation Alexa Game. This is an Alexa
 
 This skill uses the Alexa Web API for Games for 3D graphics on capable devices. The game is fully playable everywhere Alexa is, since it is a voice-driven experience. 
 
-![A Picture of the My Cactus Web Application running on a FireTV](https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus/blob/master/myCactusScreenshot.png?raw=true)
+![A Picture of the My Cactus Web Application running on a FireTV](https://github.com/alexa-samples/skill-sample-nodejs-web-api-my-cactus/blob/master/myCactusScreenshot.png?raw=true)
 
 ## Design Assets
 
@@ -21,7 +21,7 @@ If you want to run this sample, make sure you are running ASK CLI v2. For instru
 
 From your terminal, try:
 
-`ask new --template-url https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus --template-branch master`
+`ask new --template-url https://github.com/alexa-samples/skill-sample-nodejs-web-api-my-cactus --template-branch master`
 
 Select `AWS with CloudFormation`.
 
@@ -72,7 +72,7 @@ From the top level directory, run:
 
 Then add the origin with:
 
- git remote add origin https://github.com/alexa/skill-sample-nodejs-web-api-my-cactus.git
+ git remote add origin https://github.com/alexa-samples/skill-sample-nodejs-web-api-my-cactus.git
 
 or:
 
