@@ -1,5 +1,9 @@
 ## My Cactus Simulation Alexa Game
 
+# ** This repository has been archived **
+This repository is still available as a point-in-time reference, but no further updates or support will be prioritized.
+
+
 This is the repository for the my cactus simulation Alexa Game. This is an Alexa skill where players manage the light and watering of a cactus. They must check in frequently and keep the cactus alive and happy!
 
 This skill uses the Alexa Web API for Games for 3D graphics on capable devices. The game is fully playable everywhere Alexa is, since it is a voice-driven experience. 
